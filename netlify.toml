@@ -1,0 +1,10 @@
+# Cấu hình cho Netlify.
+# publish = "." nghĩa là website (index.html) nằm ở thư mục gốc.
+# functions = nơi chứa "máy chủ nhỏ" giữ API key bí mật.
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"

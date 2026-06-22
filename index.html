@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<title>IELTS Idea Generator — Tìm ý tưởng song ngữ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Midnight Aurora */
+    --bg-deep:#070A14;
+    --bg-base:#0A0E1A;
+    --ink:#F5F7FF;          /* chữ chính */
+    --ink-soft:#AEB6CC;     /* chữ phụ (đạt >4.5:1 trên nền tối) */
+    --ink-muted:#8A93AB;
+    --primary:#6366F1;
+    --primary-2:#7C3AED;
+    --grad:linear-gradient(135deg,#4F46E5,#7C3AED); /* nền cho chữ trắng — đủ tối để đạt tương phản */
+    --cyan:#34D7EE;
+    --cyan-soft:#7FE7F5;
+    --violet:#A78BFA;
+    --mint:#34D399;
+
+    --glass:rgba(255,255,255,.06);
+    --glass-2:rgba(255,255,255,.10);
+    --glass-border:rgba(255,255,255,.14);
+    --glass-hi:rgba(255,255,255,.30);
+
+    --radius:20px;
+    --radius-sm:14px;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --blur:18px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;min-height:100vh;
+    font-family:"Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+    background:
+      radial-gradient(900px 600px at 18% -8%, rgba(99,102,241,.30), transparent 60%),
+      radial-gradient(800px 560px at 88% 6%, rgba(167,139,250,.24), transparent 60%),
+      radial-gradient(900px 700px at 50% 112%, rgba(52,215,238,.20), transparent 60%),
+      var(--bg-base);
+    background-attachment:fixed;
+  }
+  h1,h2,h3,.font-head{font-family:"Be Vietnam Pro",sans-serif;letter-spacing:-.01em;}
+
+  /* Aurora blobs (ánh sáng nền) */
+  .aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+  .aurora span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform;}
+  .aurora .a1{width:480px;height:480px;background:#4F46E5;top:-160px;left:-120px;animation:drift1 24s var(--ease) infinite;}
+  .aurora .a2{width:420px;height:420px;background:#8B5CF6;top:-100px;right:-120px;animation:drift2 28s var(--ease) infinite;}
+  .aurora .a3{width:440px;height:440px;background:#22D3EE;bottom:-200px;left:35%;opacity:.32;animation:drift3 32s var(--ease) infinite;}
+
+  .wrap{max-width:880px;margin:0 auto;padding:44px 20px 60px;position:relative;}
+
+  /* Lớp kính dùng chung */
+  .glass{
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(var(--blur)) saturate(150%);
+    backdrop-filter:blur(var(--blur)) saturate(150%);
+    border:1px solid var(--glass-border);
+    box-shadow:0 18px 44px rgba(0,0,0,.45), inset 0 1px 0 var(--glass-hi);
+    border-radius:var(--radius);
+  }
+  /* Nếu trình duyệt không hỗ trợ kính mờ -> nền đặc hơn để chữ vẫn rõ */
+  @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .glass{background:rgba(22,27,44,.92);}
+  }
+
+  /* ---------- Hero ---------- */
+  header{text-align:center;margin-bottom:32px;}
+  .brand{
+    display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;padding:8px 17px 8px 9px;border-radius:999px;
+    animation:fadeUp .6s var(--ease) both;
+  }
+  .brand .mark{width:35px;height:35px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;
+    background:var(--grad);box-shadow:0 6px 16px rgba(99,102,241,.5);}
+  .brand .name{font-family:"Be Vietnam Pro";font-weight:700;font-size:15px;color:var(--ink);}
+  header h1{font-size:clamp(29px,5.2vw,44px);margin:0 0 12px;font-weight:800;line-height:1.12;animation:fadeUp .6s var(--ease) .07s both;}
+  header h1 .hl{background:linear-gradient(110deg,#A5B4FC,#67E8F9 55%,#C4B5FD);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  header p.sub{margin:0 auto;max-width:580px;color:var(--ink-soft);font-size:clamp(15px,2.4vw,17px);animation:fadeUp .6s var(--ease) .14s both;}
+
+  /* ---------- Panel nhập ---------- */
+  .panel{padding:26px;animation:fadeUp .6s var(--ease) .2s both;position:relative;}
+  label.field-label{display:block;font-family:"Be Vietnam Pro";font-weight:600;font-size:14px;margin-bottom:11px;color:var(--ink);}
+  .input-row{display:flex;gap:12px;flex-wrap:wrap;}
+  textarea{
+    flex:1;min-width:240px;min-height:62px;resize:vertical;padding:15px 16px;color:var(--ink);font-size:16px;font-family:inherit;
+    background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.16);border-radius:var(--radius-sm);outline:none;
+    transition:border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s;
+  }
+  textarea::placeholder{color:#7c849c;}
+  textarea:focus{border-color:var(--cyan);background:rgba(255,255,255,.08);box-shadow:0 0 0 4px rgba(52,215,238,.18);}
+  button{font-family:"Be Vietnam Pro";cursor:pointer;}
+  .go{
+    border:0;border-radius:var(--radius-sm);padding:0 27px;min-height:62px;font-size:16px;font-weight:700;white-space:nowrap;color:#fff;
+    display:inline-flex;align-items:center;gap:10px;background:var(--grad);
+    box-shadow:0 10px 30px rgba(99,102,241,.5), inset 0 1px 0 rgba(255,255,255,.25);
+    transition:transform .12s var(--ease), box-shadow .25s var(--ease), filter .25s;
+  }
+  .go:hover{filter:brightness(1.1);box-shadow:0 14px 38px rgba(99,102,241,.62), inset 0 1px 0 rgba(255,255,255,.3);}
+  .go:active{transform:scale(.97);}
+  .go:disabled{opacity:.6;cursor:not-allowed;box-shadow:none;}
+  .go .btn-spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+  .go.loading .btn-spin{display:inline-block;}
+
+  .examples{margin-top:17px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+  .examples .lbl{font-size:13px;color:var(--ink-soft);font-weight:600;}
+  .chip{
+    border-radius:999px;padding:9px 15px;font-size:13.5px;font-weight:600;min-height:40px;color:#D9DEF0;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+    transition:background .25s var(--ease), transform .12s var(--ease), border-color .25s, color .25s;
+  }
+  .chip:hover{background:rgba(255,255,255,.12);border-color:var(--cyan);color:#fff;transform:translateY(-1px);}
+  .chip:active{transform:scale(.96);}
+
+  /* ---------- Loading skeleton ---------- */
+  #status{display:none;margin-top:28px;}
+  #status.show{display:block;}
+  .status-text{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--ink-soft);font-weight:600;margin-bottom:16px;}
+  .status-text .dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);animation:bounce 1s var(--ease) infinite;box-shadow:0 0 12px rgba(52,215,238,.7);}
+  .status-text .dot:nth-child(2){animation-delay:.15s}
+  .status-text .dot:nth-child(3){animation-delay:.3s}
+  .skel{padding:22px;margin-bottom:14px;animation:pulse 1.5s ease-in-out infinite;}
+  .skel .line{height:13px;border-radius:6px;background:rgba(255,255,255,.09);margin-bottom:11px;}
+  .skel .line.w-70{width:70%}.skel .line.w-90{width:90%}.skel .line.w-50{width:50%}
+  .skel .block{height:54px;border-radius:10px;background:rgba(255,255,255,.07);margin:14px 0;}
+
+  /* ---------- Kết quả ---------- */
+  #results{display:none;margin-top:32px;}
+  #results.show{display:block;}
+  .topic-head{margin-bottom:22px;animation:fadeUp .5s var(--ease) both;}
+  .topic-head .en{font-family:"Be Vietnam Pro";font-size:clamp(20px,3.6vw,25px);font-weight:700;margin:0;line-height:1.25;}
+  .topic-head .vi{color:var(--ink-soft);margin:5px 0 0;font-size:15px;}
+  .badge{display:inline-flex;align-items:center;gap:7px;margin-top:13px;font-size:13px;font-weight:700;padding:6px 13px;border-radius:999px;
+    background:rgba(52,211,153,.16);color:#6EE7B7;border:1px solid rgba(52,211,153,.3);}
+  .badge .tick{width:14px;height:14px;flex:none;}
+
+  .idea{padding:24px;margin-bottom:16px;animation:fadeUp .55s var(--ease) both;transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;}
+  .idea:hover{transform:translateY(-4px);box-shadow:0 26px 56px rgba(0,0,0,.5), inset 0 1px 0 var(--glass-hi);border-color:rgba(255,255,255,.22);}
+  .idea .vi-idea{font-family:"Be Vietnam Pro";font-weight:600;font-size:17px;display:flex;align-items:flex-start;gap:13px;color:var(--ink);}
+  .idea .num{width:31px;height:31px;border-radius:10px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;
+    background:var(--grad);box-shadow:0 6px 16px rgba(99,102,241,.5);}
+  .en-box{margin:15px 0 0 44px;background:rgba(99,102,241,.13);border:1px solid rgba(129,140,248,.28);border-radius:var(--radius-sm);padding:15px 16px;position:relative;}
+  .en-box .tag{font-family:"Be Vietnam Pro";font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--cyan-soft);text-transform:uppercase;}
+  .en-box .en-text{margin-top:5px;font-size:16px;color:#EDEDFF;padding-right:80px;line-height:1.55;}
+  .copy{position:absolute;top:12px;right:12px;border-radius:10px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#D9DEF0;display:inline-flex;align-items:center;gap:5px;min-height:34px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);transition:background .25s var(--ease), transform .12s var(--ease);}
+  .copy:hover{background:rgba(255,255,255,.16);}
+  .copy:active{transform:scale(.94);}
+  .copy svg{width:13px;height:13px;}
+  .develop{margin:14px 0 0 44px;font-size:14.5px;color:var(--ink-soft);}
+  .develop b{color:var(--ink);font-weight:600;}
+  .vocab{margin:15px 0 0 44px;display:flex;flex-wrap:wrap;gap:9px;}
+  .vocab .v{border-radius:10px;padding:7px 12px;font-size:13.5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);transition:border-color .25s,background .25s;}
+  .vocab .v:hover{background:rgba(255,255,255,.1);border-color:var(--cyan);}
+  .vocab .v b{color:var(--cyan-soft);font-weight:700;}
+  .vocab .v .sep{color:rgba(255,255,255,.3);margin:0 7px;}
+  .vocab .v i{color:var(--ink-soft);font-style:normal;}
+
+  /* ---------- Lỗi ---------- */
+  .error{display:none;margin-top:24px;border-radius:var(--radius-sm);padding:15px 17px;font-size:14.5px;
+    background:rgba(251,113,133,.13);border:1px solid rgba(251,113,133,.35);color:#FDA4AF;animation:fadeUp .35s var(--ease) both;}
+  .error.show{display:flex;gap:11px;align-items:flex-start;}
+  .error svg{width:20px;height:20px;flex:none;margin-top:1px;}
+
+  /* ---------- Liên hệ ---------- */
+  .contact{margin-top:48px;padding:30px;text-align:center;}
+  .contact h2{font-size:21px;margin:0 0 7px;font-weight:700;}
+  .contact p{margin:0 0 20px;color:var(--ink-soft);font-size:14.5px;}
+  .contact-links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .clink{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);min-height:56px;font-weight:600;font-size:15px;
+    border-radius:16px;padding:12px 20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
+    transition:transform .14s var(--ease), box-shadow .25s var(--ease), border-color .25s, background .25s;}
+  .clink:hover{transform:translateY(-3px);background:rgba(255,255,255,.1);box-shadow:0 16px 36px rgba(0,0,0,.4);}
+  .clink:active{transform:scale(.97);}
+  .clink .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff;}
+  .clink .ic svg{width:22px;height:22px;}
+  .clink.zalo:hover{border-color:#3B9DFF;} .clink.zalo .ic{background:#0068FF;box-shadow:0 6px 16px rgba(0,104,255,.5);}
+  .clink.fb:hover{border-color:#4E92F7;} .clink.fb .ic{background:#1877F2;box-shadow:0 6px 16px rgba(24,119,242,.5);}
+  .clink .meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;}
+  .clink .meta .t{font-family:"Be Vietnam Pro";font-weight:700;}
+  .clink .meta .s{font-size:12.5px;color:var(--ink-soft);font-weight:500;}
+
+  footer{text-align:center;margin-top:32px;color:var(--ink-muted);font-size:13px;}
+
+  /* ---------- Keyframes ---------- */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,50px)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-50px)}}
+
+  /* Tôn trọng người tắt chuyển động */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+    html{scroll-behavior:auto;}
+    .aurora span{animation:none !important;}
+  }
+
+  :focus-visible{outline:3px solid var(--cyan);outline-offset:3px;border-radius:8px;}
+
+  @media (max-width:560px){
+    .wrap{padding:30px 16px 46px;}
+    .go{width:100%;}
+    .en-box,.develop,.vocab{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand glass">
+        <span class="mark" aria-hidden="true">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+        </span>
+        <span class="name">IELTS Idea Generator</span>
+      </div>
+      <h1>Bí ý tưởng Writing Task 2?<br><span class="hl">Có ngay ý tưởng song ngữ.</span></h1>
+      <p class="sub">Nhập một chủ đề bằng tiếng Việt hoặc tiếng Anh — nhận về các luận điểm kèm cách diễn đạt và từ vựng tiếng Anh để bạn vừa có ý, vừa học chữ.</p>
+    </header>
+
+    <section class="panel glass" aria-label="Tạo ý tưởng">
+      <label class="field-label" for="topic">Chủ đề nghị luận</label>
+      <div class="input-row">
+        <textarea id="topic" placeholder="Ví dụ: Các lợi ích của robot  /  The benefits of working from home"></textarea>
+        <button class="go" id="goBtn" onclick="generate()">
+          <span class="btn-spin" aria-hidden="true"></span>
+          <span class="btn-label">Tạo ý tưởng</span>
+        </button>
+      </div>
+      <div class="examples">
+        <span class="lbl">Gợi ý:</span>
+        <button class="chip" onclick="setTopic('Lợi ích và hạn chế của mạng xã hội')">Mạng xã hội</button>
+        <button class="chip" onclick="setTopic('Should university education be free?')">Free university</button>
+        <button class="chip" onclick="setTopic('Tác động của du lịch tới môi trường')">Du lịch &amp; môi trường</button>
+        <button class="chip" onclick="setTopic('Working from home')">Làm việc tại nhà</button>
+      </div>
+    </section>
+
+    <div id="status" aria-live="polite">
+      <div class="status-text">
+        <span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span>
+        Đang nghĩ ý tưởng cho bạn…
+      </div>
+      <div class="skel glass"><div class="line w-50"></div><div class="block"></div><div class="line w-90"></div><div class="line w-70"></div></div>
+      <div class="skel glass"><div class="line w-50"></div><div class="block"></div><div class="line w-90"></div><div class="line w-70"></div></div>
+    </div>
+
+    <div class="error glass" id="error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errorText"></span>
+    </div>
+
+    <section id="results" aria-live="polite">
+      <div class="topic-head" id="topicHead"></div>
+      <div id="ideaList"></div>
+    </section>
+
+    <section class="contact glass">
+      <h2>Cần hỗ trợ? Kết nối với mình</h2>
+      <p>Có câu hỏi về cách dùng hay góp ý cải thiện công cụ? Nhắn mình nhé.</p>
+      <div class="contact-links">
+        <a class="clink zalo" href="https://zalo.me/0384891173" target="_blank" rel="noopener" aria-label="Liên hệ qua Zalo, số 0384 891 173">
+          <span class="ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+          </span>
+          <span class="meta"><span class="t">Zalo</span><span class="s">0384 891 173</span></span>
+        </a>
+        <a class="clink fb" href="https://web.facebook.com/ngoc.hoang.961112" target="_blank" rel="noopener" aria-label="Trang Facebook của mình">
+          <span class="ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </span>
+          <span class="meta"><span class="t">Facebook</span><span class="s">ngoc.hoang.961112</span></span>
+        </a>
+      </div>
+    </section>
+  </div>
+
+<script>
+const FUNCTION_URL = "/.netlify/functions/generate-ideas";
+
+function setTopic(t){
+  const ta = document.getElementById("topic");
+  ta.value = t; ta.focus();
+}
+function esc(s){
+  return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+async function generate(){
+  const topic = document.getElementById("topic").value.trim();
+  const btn = document.getElementById("goBtn");
+  const statusEl = document.getElementById("status");
+  const errEl = document.getElementById("error");
+  const errText = document.getElementById("errorText");
+  const resEl = document.getElementById("results");
+
+  errEl.className = "error glass";
+  resEl.className = "";
+
+  if(!topic){
+    errText.textContent = "Vui lòng nhập một chủ đề trước nhé.";
+    errEl.className = "error glass show";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add("loading");
+  statusEl.className = "show";
+
+  try{
+    const resp = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+    const data = await resp.json().catch(()=> ({}));
+    if(!resp.ok) throw new Error(data.error || ("Lỗi máy chủ (" + resp.status + ")"));
+    render(data);
+  }catch(err){
+    let msg = err.message || "Đã có lỗi xảy ra.";
+    if(/Failed to fetch|NetworkError/i.test(msg)){
+      msg = "Không gọi được máy chủ. Nếu bạn đang mở file trực tiếp trên máy, hãy deploy lên Netlify rồi mở qua link Netlify. Xem HUONG-DAN.md.";
+    }
+    errText.textContent = msg;
+    errEl.className = "error glass show";
+  }finally{
+    btn.disabled = false;
+    btn.classList.remove("loading");
+    statusEl.className = "";
+  }
+}
+
+function render(data){
+  const head = document.getElementById("topicHead");
+  const list = document.getElementById("ideaList");
+  const resEl = document.getElementById("results");
+
+  if(data.raw && !data.ideas){
+    head.innerHTML = "";
+    list.innerHTML = '<div class="idea glass"><div style="white-space:pre-wrap">'+esc(data.raw)+'</div></div>';
+    resEl.className = "show";
+    return;
+  }
+
+  const tick = '<svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  let h = '';
+  if(data.topic_en){ h += '<p class="en">'+esc(data.topic_en)+'</p>'; }
+  if(data.topic_vi){ h += '<p class="vi">'+esc(data.topic_vi)+'</p>'; }
+  if(data.essay_type){ h += '<span class="badge">'+tick+'Dạng bài: '+esc(data.essay_type)+'</span>'; }
+  head.innerHTML = h;
+
+  const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  const ideas = Array.isArray(data.ideas) ? data.ideas : [];
+  list.innerHTML = ideas.map((it, i) => {
+    let vocab = '';
+    if(Array.isArray(it.vocab) && it.vocab.length){
+      vocab = '<div class="vocab">' + it.vocab.map(v =>
+        '<span class="v"><b>'+esc(v.en)+'</b><span class="sep">·</span><i>'+esc(v.vi)+'</i></span>'
+      ).join('') + '</div>';
+    }
+    const en = esc(it.idea_en||"");
+    return ''+
+      '<div class="idea glass" style="animation-delay:'+(i*0.06)+'s">'+
+        '<div class="vi-idea"><span class="num">'+(i+1)+'</span><span>'+esc(it.idea_vi||"")+'</span></div>'+
+        (en ? '<div class="en-box">'+
+          '<div class="tag">Diễn đạt tiếng Anh</div>'+
+          '<div class="en-text">'+en+'</div>'+
+          '<button class="copy" onclick="copyText(this, \''+ encodeURIComponent(it.idea_en||"") +'\')">'+copyIcon+'<span>Copy</span></button>'+
+        '</div>' : '')+
+        (it.develop_vi ? '<div class="develop"><b>Cách phát triển:</b> '+esc(it.develop_vi)+'</div>' : '')+
+        vocab+
+      '</div>';
+  }).join('');
+
+  resEl.className = "show";
+  resEl.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function copyText(btn, encoded){
+  navigator.clipboard.writeText(decodeURIComponent(encoded)).then(()=>{
+    const span = btn.querySelector("span");
+    const old = span.textContent;
+    span.textContent = "Đã copy!";
+    setTimeout(()=> span.textContent = old, 1200);
+  });
+}
+
+document.getElementById("topic").addEventListener("keydown", e=>{
+  if((e.ctrlKey||e.metaKey) && e.key === "Enter") generate();
+});
+</script>
+</body>
+</html>
