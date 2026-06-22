@@ -13,8 +13,8 @@
     /* Midnight Aurora */
     --bg-deep:#070A14;
     --bg-base:#0A0E1A;
-    --ink:#F5F7FF;          /* chữ chính */
-    --ink-soft:#AEB6CC;     /* chữ phụ (đạt >4.5:1 trên nền tối) */
+    --ink:#F5F7FF;
+    --ink-soft:#AEB6CC;
     --ink-muted:#8A93AB;
     --primary:#6366F1;
     --primary-2:#7C3AED;
@@ -50,7 +50,7 @@
   }
   h1,h2,h3,.font-head{font-family:"Be Vietnam Pro",sans-serif;letter-spacing:-.01em;}
 
-  /* Aurora blobs (ánh sáng nền) */
+  /* Aurora blobs */
   .aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
   .aurora span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform;}
   .aurora .a1{width:480px;height:480px;background:#4F46E5;top:-160px;left:-120px;animation:drift1 24s var(--ease) infinite;}
@@ -68,17 +68,13 @@
     box-shadow:0 18px 44px rgba(0,0,0,.45), inset 0 1px 0 var(--glass-hi);
     border-radius:var(--radius);
   }
-  /* Nếu trình duyệt không hỗ trợ kính mờ -> nền đặc hơn để chữ vẫn rõ */
   @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
     .glass{background:rgba(22,27,44,.92);}
   }
 
   /* ---------- Hero ---------- */
   header{text-align:center;margin-bottom:32px;}
-  .brand{
-    display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;padding:8px 17px 8px 9px;border-radius:999px;
-    animation:fadeUp .6s var(--ease) both;
-  }
+  .brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;padding:8px 17px 8px 9px;border-radius:999px;animation:fadeUp .6s var(--ease) both;}
   .brand .mark{width:35px;height:35px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;
     background:var(--grad);box-shadow:0 6px 16px rgba(99,102,241,.5);}
   .brand .name{font-family:"Be Vietnam Pro";font-weight:700;font-size:15px;color:var(--ink);}
@@ -120,10 +116,11 @@
   .chip:hover{background:rgba(255,255,255,.12);border-color:var(--cyan);color:#fff;transform:translateY(-1px);}
   .chip:active{transform:scale(.96);}
 
-  /* ---------- Loading skeleton ---------- */
+  /* ---------- Loading ---------- */
   #status{display:none;margin-top:28px;}
   #status.show{display:block;}
-  .status-text{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--ink-soft);font-weight:600;margin-bottom:16px;}
+  .status-text{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:var(--ink-soft);font-weight:600;margin-bottom:16px;text-align:center;}
+  #statusMsg{max-width:520px;}
   .status-text .dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);animation:bounce 1s var(--ease) infinite;box-shadow:0 0 12px rgba(52,215,238,.7);}
   .status-text .dot:nth-child(2){animation-delay:.15s}
   .status-text .dot:nth-child(3){animation-delay:.3s}
@@ -142,27 +139,34 @@
     background:rgba(52,211,153,.16);color:#6EE7B7;border:1px solid rgba(52,211,153,.3);}
   .badge .tick{width:14px;height:14px;flex:none;}
 
-  .idea{padding:24px;margin-bottom:16px;animation:fadeUp .55s var(--ease) both;transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;}
+  .idea{padding:24px;margin-bottom:18px;animation:fadeUp .55s var(--ease) both;transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;}
   .idea:hover{transform:translateY(-4px);box-shadow:0 26px 56px rgba(0,0,0,.5), inset 0 1px 0 var(--glass-hi);border-color:rgba(255,255,255,.22);}
-  .idea .vi-idea{font-family:"Be Vietnam Pro";font-weight:600;font-size:17px;display:flex;align-items:flex-start;gap:13px;color:var(--ink);}
+  /* Câu Idea — câu đơn, in đậm, có số thứ tự */
+  .idea .vi-idea{font-family:"Be Vietnam Pro";font-weight:700;font-size:17.5px;display:flex;align-items:flex-start;gap:13px;color:var(--ink);line-height:1.4;}
   .idea .num{width:31px;height:31px;border-radius:10px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;
     background:var(--grad);box-shadow:0 6px 16px rgba(99,102,241,.5);}
-  .en-box{margin:15px 0 0 44px;background:rgba(99,102,241,.13);border:1px solid rgba(129,140,248,.28);border-radius:var(--radius-sm);padding:15px 16px;position:relative;}
-  .en-box .tag{font-family:"Be Vietnam Pro";font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--cyan-soft);text-transform:uppercase;}
-  .en-box .en-text{margin-top:5px;font-size:16px;color:#EDEDFF;padding-right:80px;line-height:1.55;}
-  .copy{position:absolute;top:12px;right:12px;border-radius:10px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#D9DEF0;display:inline-flex;align-items:center;gap:5px;min-height:34px;
+  /* Câu Supporting Idea — câu phức, giải thích */
+  .support-vi{margin:11px 0 0 44px;font-size:15.5px;line-height:1.65;color:#CDD3E2;}
+
+  /* Thẻ con (Diễn đạt tiếng Anh + Từ vựng) — viền tối giản cho đỡ rối */
+  .subcard{margin:16px 0 0 44px;border-radius:var(--radius-sm);padding:15px 16px;position:relative;}
+  .subcard.en{background:rgba(99,102,241,.12);border:1px solid rgba(129,140,248,.20);}
+  .subcard.voc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+  .sub-tag{font-family:"Be Vietnam Pro";font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--cyan-soft);margin-bottom:11px;}
+  .en-line{margin:0 0 7px;font-size:16px;color:#EDEDFF;line-height:1.55;padding-right:80px;}
+  .en-line:last-child{margin-bottom:0;}
+  .copy{position:absolute;top:13px;right:13px;border-radius:10px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#D9DEF0;display:inline-flex;align-items:center;gap:5px;min-height:34px;
     background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);transition:background .25s var(--ease), transform .12s var(--ease);}
   .copy:hover{background:rgba(255,255,255,.16);}
   .copy:active{transform:scale(.94);}
   .copy svg{width:13px;height:13px;}
-  .develop{margin:14px 0 0 44px;font-size:14.5px;color:var(--ink-soft);}
-  .develop b{color:var(--ink);font-weight:600;}
-  .vocab{margin:15px 0 0 44px;display:flex;flex-wrap:wrap;gap:9px;}
-  .vocab .v{border-radius:10px;padding:7px 12px;font-size:13.5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);transition:border-color .25s,background .25s;}
-  .vocab .v:hover{background:rgba(255,255,255,.1);border-color:var(--cyan);}
-  .vocab .v b{color:var(--cyan-soft);font-weight:700;}
-  .vocab .v .sep{color:rgba(255,255,255,.3);margin:0 7px;}
-  .vocab .v i{color:var(--ink-soft);font-style:normal;}
+  /* Từ vựng — mỗi từ một dòng */
+  .vocab-list{list-style:none;margin:0;padding:0;}
+  .vocab-list li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+  .vocab-list li:first-child{padding-top:0;}
+  .vocab-list li:last-child{border-bottom:0;padding-bottom:0;}
+  .vocab-list .en{color:var(--cyan-soft);font-weight:700;font-size:15px;}
+  .vocab-list .vi{color:var(--ink-soft);font-size:14px;text-align:right;}
 
   /* ---------- Lỗi ---------- */
   .error{display:none;margin-top:24px;border-radius:var(--radius-sm);padding:15px 17px;font-size:14.5px;
@@ -188,8 +192,6 @@
   .clink .meta .t{font-family:"Be Vietnam Pro";font-weight:700;}
   .clink .meta .s{font-size:12.5px;color:var(--ink-soft);font-weight:500;}
 
-  footer{text-align:center;margin-top:32px;color:var(--ink-muted);font-size:13px;}
-
   /* ---------- Keyframes ---------- */
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -199,7 +201,6 @@
   @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,50px)}}
   @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-50px)}}
 
-  /* Tôn trọng người tắt chuyển động */
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
     html{scroll-behavior:auto;}
@@ -211,7 +212,7 @@
   @media (max-width:560px){
     .wrap{padding:30px 16px 46px;}
     .go{width:100%;}
-    .en-box,.develop,.vocab{margin-left:0;}
+    .support-vi,.subcard{margin-left:0;}
   }
 </style>
 </head>
@@ -251,7 +252,7 @@
     <div id="status" aria-live="polite">
       <div class="status-text">
         <span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span>
-        Đang nghĩ ý tưởng cho bạn…
+        <span id="statusMsg">Đợi xíu nha… tôi đang vắt óc nghĩ những ý tưởng tuyệt đỉnh cho bạn!</span>
       </div>
       <div class="skel glass"><div class="line w-50"></div><div class="block"></div><div class="line w-90"></div><div class="line w-70"></div></div>
       <div class="skel glass"><div class="line w-50"></div><div class="block"></div><div class="line w-90"></div><div class="line w-70"></div></div>
@@ -290,6 +291,24 @@
 <script>
 const FUNCTION_URL = "/.netlify/functions/generate-ideas";
 
+const LOADING_MSGS = [
+  "Đợi xíu nha… tôi đang vắt óc nghĩ những ý tưởng tuyệt đỉnh cho bạn!",
+  "Ý tưởng xịn cần chút thời gian — đang lọc từ vựng band 8+ cho bạn đây…",
+  "Đang ghép Idea với Supporting Idea sao cho thật mượt, ráng chờ nhé…",
+  "Sắp xong rồi! Đang gói ghém ý tưởng và từ vựng thật ngon cho bạn…"
+];
+let loadingTimer = null;
+function startLoadingMsgs(){
+  const el = document.getElementById("statusMsg");
+  let i = 0;
+  el.textContent = LOADING_MSGS[0];
+  loadingTimer = setInterval(()=>{
+    i = (i + 1) % LOADING_MSGS.length;
+    el.textContent = LOADING_MSGS[i];
+  }, 3500);
+}
+function stopLoadingMsgs(){ if(loadingTimer){ clearInterval(loadingTimer); loadingTimer = null; } }
+
 function setTopic(t){
   const ta = document.getElementById("topic");
   ta.value = t; ta.focus();
@@ -318,6 +337,7 @@ async function generate(){
   btn.disabled = true;
   btn.classList.add("loading");
   statusEl.className = "show";
+  startLoadingMsgs();
 
   try{
     const resp = await fetch(FUNCTION_URL, {
@@ -339,6 +359,7 @@ async function generate(){
     btn.disabled = false;
     btn.classList.remove("loading");
     statusEl.className = "";
+    stopLoadingMsgs();
   }
 }
 
@@ -364,23 +385,37 @@ function render(data){
   const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   const ideas = Array.isArray(data.ideas) ? data.ideas : [];
   list.innerHTML = ideas.map((it, i) => {
-    let vocab = '';
-    if(Array.isArray(it.vocab) && it.vocab.length){
-      vocab = '<div class="vocab">' + it.vocab.map(v =>
-        '<span class="v"><b>'+esc(v.en)+'</b><span class="sep">·</span><i>'+esc(v.vi)+'</i></span>'
-      ).join('') + '</div>';
+    // Khối tiếng Anh: Idea + Supporting Idea (mỗi câu một dòng)
+    const ideaEn = esc(it.idea_en || "");
+    const supEn = esc(it.support_en || "");
+    let enBlock = "";
+    if(ideaEn || supEn){
+      const payload = encodeURIComponent(((it.idea_en||"") + " " + (it.support_en||"")).trim());
+      enBlock =
+        '<div class="subcard en">'+
+          '<div class="sub-tag">Diễn đạt tiếng Anh</div>'+
+          '<button class="copy" onclick="copyText(this, \''+payload+'\')">'+copyIcon+'<span>Copy</span></button>'+
+          (ideaEn ? '<p class="en-line">'+ideaEn+'</p>' : '')+
+          (supEn ? '<p class="en-line">'+supEn+'</p>' : '')+
+        '</div>';
     }
-    const en = esc(it.idea_en||"");
+    // Khối từ vựng band cao — mỗi từ một dòng
+    let vocBlock = "";
+    if(Array.isArray(it.vocab) && it.vocab.length){
+      vocBlock =
+        '<div class="subcard voc">'+
+          '<div class="sub-tag">Các từ vựng band cao nên học</div>'+
+          '<ul class="vocab-list">'+
+            it.vocab.map(v => '<li><span class="en">'+esc(v.en)+'</span><span class="vi">'+esc(v.vi)+'</span></li>').join('')+
+          '</ul>'+
+        '</div>';
+    }
     return ''+
       '<div class="idea glass" style="animation-delay:'+(i*0.06)+'s">'+
         '<div class="vi-idea"><span class="num">'+(i+1)+'</span><span>'+esc(it.idea_vi||"")+'</span></div>'+
-        (en ? '<div class="en-box">'+
-          '<div class="tag">Diễn đạt tiếng Anh</div>'+
-          '<div class="en-text">'+en+'</div>'+
-          '<button class="copy" onclick="copyText(this, \''+ encodeURIComponent(it.idea_en||"") +'\')">'+copyIcon+'<span>Copy</span></button>'+
-        '</div>' : '')+
-        (it.develop_vi ? '<div class="develop"><b>Cách phát triển:</b> '+esc(it.develop_vi)+'</div>' : '')+
-        vocab+
+        (it.support_vi ? '<p class="support-vi">'+esc(it.support_vi)+'</p>' : '')+
+        enBlock+
+        vocBlock+
       '</div>';
   }).join('');
 
