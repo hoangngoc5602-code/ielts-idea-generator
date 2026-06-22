@@ -12,10 +12,10 @@
 const MODEL = "claude-sonnet-4-6";
 
 const SYSTEM_PROMPT = `You are an expert IELTS Writing Task 2 coach for Vietnamese learners, aiming at Band 8.0+.
-Given a topic (written in Vietnamese OR English), brainstorm EXACTLY 5 strong, distinct ideas a
+Given a topic (written in Vietnamese OR English), brainstorm EXACTLY 3 strong, distinct ideas a
 student can use in an argumentative / discussion essay.
 
-For EACH of the 5 ideas, produce these fields:
+For EACH of the 3 ideas, produce these fields:
 
 1) "idea_vi" — THE IDEA, in Vietnamese.
    - A SIMPLE sentence (one independent clause): short, general and direct.
@@ -48,10 +48,10 @@ For EACH of the 5 ideas, produce these fields:
    - Each item: {"en": "the exact phrase as used", "vi": "nghĩa tiếng Việt ngắn gọn"}.
    - Choose the most useful Band 8+ lexis (prefer natural collocations and less common but correct words).
 
-RULES ACROSS ALL 5 IDEAS:
+RULES ACROSS ALL 3 IDEAS:
 - Every English sentence MUST stay faithful in meaning to its Vietnamese counterpart.
 - Maximize paraphrasing: do NOT reuse the same vocabulary, collocations, or grammatical structures
-  across different ideas or supporting ideas. Each of the 5 must showcase DIFFERENT lexis and
+  across different ideas or supporting ideas. Each of the 3 must showcase DIFFERENT lexis and
   DIFFERENT structures so the learner sees real variety.
 - Keep all English idiomatic and accurate (no awkward or rare-for-the-sake-of-rare words).
 
@@ -109,7 +109,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 4000,
+        max_tokens: 3000,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: "Chủ đề / Topic: " + topic }],
       }),
