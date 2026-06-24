@@ -61,7 +61,6 @@ const SOURCES = [
   },
 ];
 
-];
 
 // ── Dùng Haiku — đủ cho extraction, rẻ hơn Sonnet 6x ───────
 const MODEL = "claude-haiku-4-5-20251001";
