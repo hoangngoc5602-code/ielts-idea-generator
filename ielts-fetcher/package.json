@@ -1,0 +1,13 @@
+{
+  "name": "ielts-exam-fetcher",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Weekly fetcher: IELTS Writing Task 2 exam questions from 11 sources -> Google Sheet",
+  "main": "fetch.mjs",
+  "scripts": {
+    "start": "node fetch.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0"
+  }
+}
