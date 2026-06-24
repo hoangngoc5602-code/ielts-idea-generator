@@ -7,58 +7,60 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-// ── CONFIG: 11 nguồn ────────────────────────────────────────
-// ⚠ Các URL có chú thích "Verify" → bạn cần mở trang đó,
-//   kiểm tra URL thật chứa đề thi, rồi cập nhật vào đây.
+// ── CONFIG: nguồn dữ liệu ───────────────────────────────────
 const SOURCES = [
-  // ─── QUỐC TẾ (blog tĩnh, fetch thẳng OK) ─────────────────
-  {
-    name: "IELTS Simon",
-    url: "https://www.ielts-simon.com/ielts-help-and-english-pro/task-2-essays/",
-  },
+  // ─── QUỐC TẾ ──────────────────────────────────────────────
   {
     name: "Laokaoya",
-    // Trang tổng hợp đáp án sau mỗi kỳ thi — có Task 2 topic
+    // Blog Trung Quốc tổng hợp đáp án sau kỳ thi, có Task 2
+    // Đôi khi bị chặn do server China — bình thường nếu fail
     url: "https://www.laokaoya.com/category/tests",
   },
   {
-    name: "IELTS Advantage",
-    url: "https://www.ieltsadvantage.com/writing-task-2/",
+    name: "How To Do IELTS",
+    // Tổng hợp đề thi thật từ thí sinh báo về — cập nhật liên tục
+    url: "https://howtodoielts.com/recent-ielts-writing-topics-2022/",
   },
   {
-    name: "IELTS Bro",
-    url: "https://ieltsbro.com/ielts-writing-task-2/", // ⚠ Verify
+    name: "IELTS Buddy",
+    // Danh sách đề thi mới nhất — cập nhật thường xuyên
+    url: "https://www.ieltsbuddy.com/latest-ielts-writing-topics.html",
   },
 
-  // ─── VIỆT NAM (server-rendered, fetch thẳng OK) ──────────
+  // ─── VIỆT NAM ─────────────────────────────────────────────
   {
     name: "ZIM",
-    url: "https://zim.vn/de-thi-ielts-writing-2026", // ✅ Confirmed
+    url: "https://zim.vn/de-thi-ielts-writing-2026", // ✅ Working
   },
   {
     name: "Vietop",
-    url: "https://vietop.edu.vn/blog/tong-hop-de-thi-ielts-writing-2025/", // ✅ Confirmed
-  },
-  {
-    name: "The IELTS Workshop",
-    url: "https://theieltsworkshop.vn/de-thi-ielts-writing/", // ⚠ Verify
-  },
-  {
-    name: "IELTS Fighter",
-    url: "https://ieltsfighter.com.vn/de-thi-ielts/", // ⚠ Verify
-  },
-  {
-    name: "STUDY4",
-    url: "https://study4.vn/bai-viet/de-thi-ielts-writing/", // ⚠ Verify
-  },
-  {
-    name: "TalkFirst",
-    url: "https://talkfirst.vn/de-thi-ielts/", // ⚠ Verify
+    url: "https://vietop.edu.vn/blog/tong-hop-de-thi-ielts-writing-2025/", // ✅ Working
   },
   {
     name: "IELTS CITY",
-    url: "https://ieltscity.vn/de-thi-ielts-writing/", // ⚠ Verify
+    url: "https://ieltscity.vn/de-thi-ielts-writing-2026/", // ✅ Working
   },
+  {
+    name: "The IELTS Workshop",
+    // Domain mới: onthiielts.com.vn
+    url: "https://onthiielts.com.vn/de-thi-ielts-writing-2026/",
+  },
+  {
+    name: "IELTS Fighter",
+    // Domain đúng: ielts-fighter.com (có gạch ngang, đuôi .com)
+    url: "https://ielts-fighter.com/tin-tuc/tong-hop-de-thi-ielts-writing_mt1641797167.html",
+  },
+  {
+    name: "TalkFirst",
+    url: "https://talkfirst.vn/de-thi-ielts-writing-2026/",
+  },
+  {
+    name: "STUDY4",
+    // Domain đúng: study4.com (không phải study4.vn)
+    url: "https://study4.com/topics/ielts-writing/",
+  },
+];
+
 ];
 
 // ── Dùng Haiku — đủ cho extraction, rẻ hơn Sonnet 6x ───────
