@@ -43,7 +43,7 @@ export default async (req) => {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
 
-  let text = "", prompt = "", targetBand = "", part = 1, prev = "";
+  let text = "", prompt = "", targetBand = "", part = 1, prev = "", cont = false, partial = "";
   try {
     const body = await req.json();
     text = (body.text || "").toString().trim();
@@ -51,6 +51,8 @@ export default async (req) => {
     targetBand = (body.targetBand || "").toString().trim();
     part = parseInt(body.part, 10) || 1;
     prev = (body.prev || "").toString().slice(0, 6000);
+    cont = body.cont === true || body.cont === "true";   // lượt VIẾT TIẾP phần đang dở
+    partial = (body.partial || "").toString().slice(0, 6000);
   } catch (e) {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
@@ -73,13 +75,18 @@ export default async (req) => {
        "(mỗi tiêu chí 2-3 gạch đầu dòng; trích nguyên văn từ/cấu trúc trong bản viết lại)",
   };
 
-  const userMsg =
+  const base =
     "ĐỀ BÀI (bối cảnh):\n" + (prompt || "(học viên không cung cấp đề — hãy suy luận bối cảnh hợp lý)") + "\n\n" +
     "BAND MỤC TIÊU: " + targetBand + "\n\n" +
     "CÂU/ĐOẠN CỦA HỌC VIÊN:\n" + text + "\n\n" +
-    (prev ? ("PHẦN ĐÃ XUẤT (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
-    (SECTIONS[part] || SECTIONS[1]) +
-    "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết.";
+    (prev ? ("PHẦN ĐÃ XUẤT (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "");
+  const userMsg = cont
+    ? (base +
+       "MỤC ĐANG VIẾT bị NGẮT giữa chừng. Phần ĐÃ VIẾT của mục này:\n" + partial + "\n\n" +
+       "Hãy VIẾT TIẾP NGAY TỪ CHỖ DỪNG để hoàn tất ĐÚNG mục đang dở: nối liền mạch, KHÔNG lặp lại chữ đã có, KHÔNG viết lại tiêu đề, KHÔNG mở đầu/kết. Khi xong mục thì DỪNG.")
+    : (base +
+       (SECTIONS[part] || SECTIONS[1]) +
+       "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết.");
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -90,7 +97,7 @@ export default async (req) => {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1800,
+      max_tokens: 1400,
       stream: true,
       // Prompt caching: phần system cố định -> cache để lượt 2 nhanh & rẻ hơn (tự bỏ qua nếu chưa bật).
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
@@ -118,6 +125,7 @@ function streamAnthropicText(upstreamBody) {
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
       let buffer = "";
+      let stopReason = "";
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -134,10 +142,14 @@ function streamAnthropicText(upstreamBody) {
               const evt = JSON.parse(data);
               if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") {
                 controller.enqueue(encoder.encode(evt.delta.text));
+              } else if (evt.type === "message_delta" && evt.delta && evt.delta.stop_reason) {
+                stopReason = evt.delta.stop_reason;
               }
             } catch (e) { /* skip */ }
           }
         }
+        // Báo cho frontend: viết XONG (end_turn) hay bị cắt. Sentinel sẽ được frontend bóc bỏ.
+        if (stopReason === "end_turn") controller.enqueue(encoder.encode("[[[DONE]]]"));
       } catch (e) {
         controller.enqueue(new TextEncoder().encode("\n\n[Lỗi truyền dữ liệu: " + (e.message || e) + "]"));
       } finally {

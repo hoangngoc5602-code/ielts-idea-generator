@@ -52,7 +52,7 @@ THANG LEXICAL RESOURCE (trích nguyên từ guide, áp dụng tương tự cho c
 
 12 LỖI HAY GẶP (Task 2): dưới độ dài; thiếu phần của đề; sai định dạng; sai tone; ý không liên quan; sản xuất máy móc/lặp; off-topic/tangential/hiểu sai đề; chỉ trả lời một phần đề; thiếu/yếu phân đoạn; lỗi chính tả.
 
-PHONG CÁCH NHẬN XÉT CỦA GIÁM KHẢO (bắt chước): luôn TRÍCH DẪN cụ thể từ/câu trong bài (cả lỗi lẫn điểm tốt) đặt trong ngoặc, ví dụ lỗi [come bankrupt | unfar | impact reason] hoặc collocation tốt [gas emission | greenhouse gases]. Không nói chung chung.`;
+PHONG CÁCH NHẬN XÉT CỦA GIÁM KHẢO (bắt chước): luôn TRÍCH DẪN cụ thể từ/câu trong bài, KHÔNG nói chung chung. CÁCH TRÍCH (bắt buộc): KHÔNG dùng ngoặc vuông [], ngoặc kép "" hay dấu *; thay vào đó BỌC cụm NGUYÊN VĂN của học viên (cả lỗi lẫn điểm tốt) trong {{s:...}}, và BỌC cụm SỬA ĐÚNG / cách viết mới do bạn đề xuất trong {{n:...}}. Ví dụ: lỗi {{s:come bankrupt}} → sửa {{n:go bankrupt}}; collocation tốt {{s:greenhouse gases}}.`;
 
 const SYSTEM_PROMPT = `Bạn là GIÁM KHẢO IELTS Writing được huấn luyện, chấm Task 2 cho học viên người Việt.
 Bạn PHẢI chấm bám sát bộ rubric dưới đây mỗi lần, không phán đoán cảm tính.
@@ -70,8 +70,10 @@ YÊU CẦU ĐẦU RA (rất quan trọng):
 - CHẤM THEO TỪNG LƯỢT: chỉ xuất ĐÚNG các mục được liệt kê trong tin nhắn của lượt đó; KHÔNG thêm mục khác, KHÔNG lặp lại mục đã chấm ở phần "ĐÃ CHẤM"; GIỮ NHẤT QUÁN điểm số với phần đã chấm (nếu có). Không viết mở đầu/kết thừa.
 
 TRÌNH BÀY ĐỂ DỄ ĐỌC (bắt buộc):
-- Viết đoạn NGẮN (2-3 câu); tách ý bằng gạch đầu dòng; IN ĐẬM kết luận và từ khoá quan trọng. Tránh đoạn văn dài liền mạch khó đọc.
-- Markdown; dùng gạch đầu dòng cho điểm và cho danh sách lỗi; KHÔNG dùng bảng.
+- KHÔNG viết đoạn văn dài liền mạch. Mỗi gạch đầu dòng chỉ 1-2 câu NGẮN; ý nào dài thì tách thành nhiều gạch đầu dòng cho dễ skim.
+- Với danh sách (đặc biệt mục "Dẫn chứng & lỗi"): trình bày dạng GẠCH ĐẦU DÒNG PHỤ — thụt vào 2 khoảng trắng rồi "- ", MỖI lỗi/ý một dòng riêng, ngắn gọn (vd: "  - {{s:come bankrupt}} → {{n:go bankrupt}} (sai collocation)").
+- TRÍCH cụm: cụm của học viên bọc {{s:...}}, cụm sửa/viết mới bọc {{n:...}}; TUYỆT ĐỐI không dùng [], "" hay * để trích cụm.
+- IN ĐẬM nhãn & kết luận quan trọng. Markdown; KHÔNG dùng bảng.
 
 Theo ĐÚNG khung sau — mỗi tiêu chí trình bày bằng 3 gạch đầu dòng có nhãn in đậm:
 
@@ -110,13 +112,15 @@ export default async (req) => {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
 
-  let essay = "", prompt = "", part = 1, prev = "";
+  let essay = "", prompt = "", part = 1, prev = "", cont = false, partial = "";
   try {
     const body = await req.json();
     essay = (body.essay || "").toString().trim();
     prompt = (body.prompt || "").toString().trim();
     part = parseInt(body.part, 10) || 1;
     prev = (body.prev || "").toString().slice(0, 12000);
+    cont = body.cont === true || body.cont === "true";   // lượt VIẾT TIẾP phần đang dở
+    partial = (body.partial || "").toString().slice(0, 6000);
   } catch (e) {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
@@ -134,12 +138,17 @@ export default async (req) => {
     4: "LƯỢT 4/5 — CHỈ xuất mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Grammatical Range & Accuracy (GRA) — Band X\n(3 gạch đầu dòng; mục 'Dẫn chứng & lỗi' LIỆT KÊ HẾT lỗi ngữ pháp/dấu câu, MỖI lỗi 1 gạch đầu dòng kèm sửa đúng)",
     5: "LƯỢT 5/5 — CHỈ xuất mục sau:\n### Tổng kết & cách lên band\n(4-6 gạch đầu dòng, ưu tiên tiêu chí yếu nhất)",
   };
-  const userMsg =
+  const base =
     "ĐỀ BÀI (Task 2):\n" + prompt + "\n\n" +
     "BÀI VIẾT CỦA HỌC VIÊN:\n" + essay + "\n\n" +
-    (prev ? ("PHẦN ĐÃ CHẤM (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
-    (SECTIONS[part] || SECTIONS[1]) +
-    "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết. Tuân thủ rubric và cách trình bày gạch đầu dòng dễ đọc.";
+    (prev ? ("PHẦN ĐÃ CHẤM (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "");
+  const userMsg = cont
+    ? (base +
+       "MỤC ĐANG CHẤM bị NGẮT giữa chừng. Phần ĐÃ VIẾT của mục này:\n" + partial + "\n\n" +
+       "Hãy VIẾT TIẾP NGAY TỪ CHỖ DỪNG để hoàn tất ĐÚNG mục đang dở: nối liền mạch, KHÔNG lặp lại chữ đã có, KHÔNG viết lại tiêu đề, KHÔNG mở đầu/kết. Khi xong mục thì DỪNG.")
+    : (base +
+       (SECTIONS[part] || SECTIONS[1]) +
+       "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết. Tuân thủ rubric và cách trình bày gạch đầu dòng dễ đọc.");
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -150,9 +159,9 @@ export default async (req) => {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1600,
+      max_tokens: 1400,
       stream: true,
-      // Prompt caching: rubric (system) rất dài & cố định -> cache lại để 4 lượt sau
+      // Prompt caching: rubric (system) rất dài & cố định -> cache lại để các lượt sau
       // xử lý nhanh hơn (đỡ chạm giới hạn ~26s) và rẻ hơn. Tự bỏ qua nếu API chưa bật cache.
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userMsg }],
@@ -182,6 +191,7 @@ export function streamAnthropicText(upstreamBody) {
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
       let buffer = "";
+      let stopReason = "";
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -198,10 +208,14 @@ export function streamAnthropicText(upstreamBody) {
               const evt = JSON.parse(data);
               if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") {
                 controller.enqueue(encoder.encode(evt.delta.text));
+              } else if (evt.type === "message_delta" && evt.delta && evt.delta.stop_reason) {
+                stopReason = evt.delta.stop_reason;
               }
             } catch (e) { /* bỏ qua dòng không phải JSON */ }
           }
         }
+        // Báo cho frontend: lượt này đã viết XONG tự nhiên (end_turn) hay bị cắt (max_tokens/timeout).
+        if (stopReason === "end_turn") controller.enqueue(encoder.encode("[[[DONE]]]"));
       } catch (e) {
         controller.enqueue(new TextEncoder().encode("\n\n[Lỗi khi truyền dữ liệu: " + (e.message || e) + "]"));
       } finally {

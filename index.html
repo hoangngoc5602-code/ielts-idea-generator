@@ -144,6 +144,12 @@
   .md ul{margin:0 0 14px;padding-left:6px;list-style:none;}
   .md li{position:relative;padding-left:22px;margin:9px 0;color:#E7EAF5;font-size:15px;line-height:1.66;}
   .md li::before{content:"";position:absolute;left:4px;top:10px;width:6px;height:6px;border-radius:50%;background:var(--ring);}
+  /* bullet PHỤ (ý nhỏ hơn): vẫn chấm tròn nhưng TÍM NHẠT hơn + thụt vào, để phân cấp & dễ skim */
+  .md li.sub{padding-left:20px;margin:5px 0 5px 20px;font-size:14.5px;color:#D7DBEA;line-height:1.6;}
+  .md li.sub::before{left:2px;top:9px;width:5px;height:5px;background:var(--accent);opacity:.8;}
+  /* cụm HỌC VIÊN viết = đỏ + nghiêng; cụm MỚI/ĐÚNG = xanh lá + nghiêng (dùng nhất quán) */
+  .md .hl-student{font-style:italic;color:var(--danger);}
+  .md .hl-new{font-style:italic;color:#34D399;}
   .md strong{color:#fff;font-weight:700;} .md code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;font-size:14px;color:#E9D5FF;}
   .err-inline{background:rgba(251,113,133,.13);border:1px solid rgba(251,113,133,.35);color:var(--danger-soft);border-radius:12px;padding:13px 15px;font-size:14.5px;}
 
@@ -279,15 +285,27 @@ document.querySelectorAll(".tab").forEach(t=> t.addEventListener("click", ()=> s
 
 /* Markdown nhỏ */
 function renderMarkdown(md){
+  const inline=s=>esc(s)
+    .replace(/\{\{s:([\s\S]+?)\}\}/g,'<em class="hl-student">$1</em>')  // cụm HV viết: đỏ + nghiêng
+    .replace(/\{\{n:([\s\S]+?)\}\}/g,'<em class="hl-new">$1</em>')       // cụm mới/đúng: xanh lá + nghiêng
+    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/`(.+?)`/g,"<code>$1</code>");
   const lines=md.split("\n");let html="";let inList=false;
-  const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/`(.+?)`/g,"<code>$1</code>");
-  for(const raw of lines){const line=raw.replace(/\s+$/,"");
-    if(/^###\s+/.test(line)){if(inList){html+="</ul>";inList=false;}html+="<h4>"+inline(line.replace(/^###\s+/,""))+"</h4>";continue;}
-    if(/^##\s+/.test(line)){if(inList){html+="</ul>";inList=false;}html+="<h3>"+inline(line.replace(/^##\s+/,""))+"</h3>";continue;}
-    if(/^[-*]\s+/.test(line)){if(!inList){html+="<ul>";inList=true;}html+="<li>"+inline(line.replace(/^[-*]\s+/,""))+"</li>";continue;}
-    if(line.trim()===""){if(inList){html+="</ul>";inList=false;}continue;}
+  for(const raw of lines){
+    const line=raw.replace(/\s+$/,""); const t=line.trim();
+    if(/^###\s+/.test(t)){if(inList){html+="</ul>";inList=false;}html+="<h4>"+inline(t.replace(/^###\s+/,""))+"</h4>";continue;}
+    if(/^##\s+/.test(t)){if(inList){html+="</ul>";inList=false;}html+="<h3>"+inline(t.replace(/^##\s+/,""))+"</h3>";continue;}
+    const m=line.match(/^(\s*)[-*]\s+(.*)$/);
+    if(m){
+      if(!inList){html+="<ul>";inList=true;}
+      const sub=m[1].length>=2||m[1].indexOf("\t")>=0;   // có thụt lề -> bullet phụ (chấm tím nhạt)
+      html+="<li"+(sub?' class="sub"':"")+">"+inline(m[2])+"</li>";
+      continue;
+    }
+    if(t===""){if(inList){html+="</ul>";inList=false;}continue;}
     if(inList){html+="</ul>";inList=false;}
-    html+="<p>"+inline(line)+"</p>";}
+    html+="<p>"+inline(line)+"</p>";
+  }
   if(inList)html+="</ul>";return html;
 }
 
@@ -315,26 +333,6 @@ let loadingTimer=null;
 function startLoadingMsgs(){const el=document.getElementById("statusMsg");let i=0;el.textContent=LOADING_MSGS[0];loadingTimer=setInterval(()=>{i=(i+1)%LOADING_MSGS.length;el.textContent=LOADING_MSGS[i];},3500);}
 function stopLoadingMsgs(){if(loadingTimer){clearInterval(loadingTimer);loadingTimer=null;}}
 function setTopic(t){const ta=document.getElementById("topic");ta.value=t;ta.focus();}
-// Gọi 1 lượt của Tìm ý tưởng -> trả object JSON đã parse (mỗi lượt JSON nhỏ nên ít rủi ro cắt)
-async function fetchIdeasPart(payload){
-  const resp=await fetch(FN.ideas,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
-  const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
-  while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
-  let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
-  try{return JSON.parse(txt);}
-  catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn). Cậu bấm Tạo ý tưởng lại giúp tớ nha!");}
-}
-// Tóm tắt nhóm 1 (câu Anh + vocab) làm ngữ cảnh cho lượt 2, để AI không lặp lại
-function ideasContext(groups){
-  const lines=[];
-  (groups||[]).forEach(g=>(g.ideas||[]).forEach(it=>{
-    if(it.idea_en)lines.push(it.idea_en);
-    if(it.support_en)lines.push(it.support_en);
-    if(Array.isArray(it.vocab))lines.push(it.vocab.map(v=>v.en).join(", "));
-  }));
-  return lines.join("\n");
-}
 async function generate(){
   const topic=document.getElementById("topic").value.trim();
   const btn=document.getElementById("goBtn"),statusEl=document.getElementById("status"),errEl=document.getElementById("ideaError"),errText=document.getElementById("ideaErrorText"),resEl=document.getElementById("results");
@@ -342,20 +340,15 @@ async function generate(){
   if(!topic){errText.textContent="Cậu nhập một chủ đề trước đã nha.";errEl.className="error glass show";return;}
   btn.disabled=true;btn.classList.add("loading");statusEl.className="show";startLoadingMsgs();
   try{
-    // LƯỢT 1: metadata + nhóm 1 (+ số hướng total_groups)
-    const data=await fetchIdeasPart({topic,part:1});
-    if(!Array.isArray(data.groups)) data.groups=[];
-    statusEl.className="";stopLoadingMsgs();
+    const resp=await fetch(FN.ideas,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic})});
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
+    while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
+    let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
+    let data;
+    try{data=JSON.parse(txt);}
+    catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn). Cậu bấm Tạo ý tưởng lại giúp tớ nha!");}
     renderIdeas(data);
-    // LƯỢT 2: nếu đề 2 hướng -> lấy nốt nhóm 2 (truyền nhóm 1 làm ngữ cảnh tránh lặp)
-    const total=parseInt(data.total_groups,10)||data.groups.length;
-    if(total>=2 && data.groups.length<2){
-      const data2=await fetchIdeasPart({topic,part:2,prev:ideasContext(data.groups)});
-      if(data2&&Array.isArray(data2.groups)&&data2.groups.length){
-        data.groups=data.groups.concat(data2.groups);
-        renderIdeas(data);
-      }
-    }
   }catch(err){let msg=err.message||"Có gì đó trục trặc rồi.";if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";errText.textContent=msg;errEl.className="error glass show";}
   finally{btn.disabled=false;btn.classList.remove("loading");statusEl.className="";stopLoadingMsgs();}
 }
@@ -444,10 +437,18 @@ async function runParaphrase(){
   let acc="";
   try{
     for(const p of [1,2]){
-      const payload={text,prompt,targetBand,part:p}; if(acc) payload.prev=acc;
-      const prefix = acc ? acc+"\n\n" : "";
-      const cur = await streamPart(FN.para, payload, md, prefix);
-      acc = prefix + cur;
+      // Mỗi mục: nếu bị cắt thì tự gọi VIẾT TIẾP cho trọn rồi mới sang mục sau.
+      let passText="", complete=false, tries=0;
+      while(!complete && tries<6){
+        tries++;
+        const payload={text,prompt,targetBand,part:p}; if(acc) payload.prev=acc;
+        if(passText){ payload.cont=true; payload.partial=passText.slice(-4000); }
+        const before=(acc?acc+"\n\n":"")+passText;
+        const r=await streamPart(FN.para, payload, md, before);
+        passText+=r.text; complete=r.complete;
+        if(!r.text) break;
+      }
+      acc=(acc?acc+"\n\n":"")+passText;
     }
     if(!acc.trim()) md.innerHTML="<p>Chưa có nội dung trả về. Bạn thử lại nhé.</p>";
   }catch(err){
@@ -457,12 +458,17 @@ async function runParaphrase(){
   }finally{ btn.disabled=false; btn.classList.remove("loading"); }
 }
 /* TAB 4: Chấm điểm */
+/* Sentinel server gắn vào cuối khi lượt đã viết XONG (end_turn). Không thấy nó = lượt bị cắt. */
+const DONE_MARK="[[[DONE]]]";
+function stripDone(s){ return s.split(DONE_MARK).join(""); }
 async function streamPart(url, payload, mdEl, prefix){
   const resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
   if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
   const reader=resp.body.getReader(),dec=new TextDecoder();let cur="";
-  while(true){const {done,value}=await reader.read();if(done)break;cur+=dec.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(prefix+cur);}
-  return cur;
+  try{
+    while(true){const {done,value}=await reader.read();if(done)break;cur+=dec.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(prefix+stripDone(cur));}
+  }catch(e){ /* kết nối đứt giữa chừng (vd ~26s) -> coi như lượt bị cắt, sẽ tự nối tiếp */ }
+  return { text: stripDone(cur), complete: cur.indexOf(DONE_MARK)>=0 };
 }
 async function runScore(){
   const essay=document.getElementById("scoreEssay").value.trim(),prompt=document.getElementById("scorePrompt").value.trim();
@@ -476,10 +482,18 @@ async function runScore(){
   let acc="";
   try{
     for(const p of [1,2,3,4,5]){
-      const payload={essay,prompt,part:p}; if(acc) payload.prev=acc;
-      const prefix = acc ? acc+"\n\n" : "";
-      const cur = await streamPart(FN.score, payload, md, prefix);
-      acc = prefix + cur;
+      // Mỗi tiêu chí: nếu bị cắt giữa chừng thì TỰ GỌI VIẾT TIẾP cho trọn rồi mới sang tiêu chí sau.
+      let passText="", complete=false, tries=0;
+      while(!complete && tries<6){
+        tries++;
+        const payload={essay,prompt,part:p}; if(acc) payload.prev=acc;
+        if(passText){ payload.cont=true; payload.partial=passText.slice(-4000); }
+        const before=(acc?acc+"\n\n":"")+passText;
+        const r=await streamPart(FN.score, payload, md, before);
+        passText+=r.text; complete=r.complete;
+        if(!r.text) break;   // không nhận thêm được gì -> dừng để tránh lặp vô ích
+      }
+      acc=(acc?acc+"\n\n":"")+passText;
     }
     if(!acc.trim()) md.innerHTML="<p>Chưa có kết quả. Cậu thử lại nha.</p>";
   }catch(err){

@@ -1,41 +1,43 @@
 // ============================================================
 //  Công cụ TÌM Ý TƯỞNG (IELTS Writing Task 2) — song ngữ.
-//  Netlify Functions 2.0 + STREAMING (tránh timeout với đề 2 hướng).
-//  Nhận: chủ đề -> trả JSON ý tưởng theo NHÓM (1 hoặc 2 hướng), stream về.
+//  Netlify Functions 2.0 + STREAMING. MỘT lần gọi -> JSON ý tưởng theo NHÓM (1 hoặc 2 hướng).
 //  API key đọc từ biến môi trường ANTHROPIC_API_KEY.
 // ============================================================
 
-// Sonnet cho chất lượng cao. Chia theo HƯỚNG để không bị cắt: đề 1 hướng = 1 lượt;
-// đề 2 phần = 2 lượt (mỗi lượt 1 nhóm 3 ý). Mỗi lượt đủ ngắn để xong trong ~26s của Netlify.
-const MODEL = "claude-sonnet-4-6";
+// Haiku: nhanh ~3 lần Sonnet -> MỘT lần gọi là xong gọn trong ~26s, KHÔNG cần chia lượt,
+// không bị cắt. Đầu ra ý tưởng vốn có giới hạn (3-6 ý) nên Haiku chạy ổn định.
+// Chất lượng được siết bằng prompt chi tiết + VÍ DỤ MẪU + bước TỰ KIỂM bên dưới.
+const MODEL = "claude-haiku-4-5-20251001";
 
 const SYSTEM_PROMPT = `Bạn là huấn luyện viên IELTS Writing Task 2 cho người Việt, nhắm Band 8.0+.
-Người học nhập một CHỦ ĐỀ (tiếng Việt hoặc tiếng Anh). Hãy brainstorm ý tưởng song ngữ.
+Người học nhập một CHỦ ĐỀ (tiếng Việt hoặc tiếng Anh). Hãy brainstorm ý tưởng song ngữ CHẤT LƯỢNG CAO.
 
-BƯỚC 1 — XÁC ĐỊNH SỐ HƯỚNG của đề:
-- Đề MỘT hướng (vd "lợi ích của A", "nguyên nhân của B", một quan điểm) -> total_groups = 1; nhóm để side_vi/side_en RỖNG.
-- Đề HAI PHẦN hoàn chỉnh (lợi ích & hạn chế; nguyên nhân & giải pháp; vấn đề & giải pháp;
-  thảo luận hai quan điểm; agree/disagree khai thác cả hai mặt) -> total_groups = 2; có 2 nhóm,
-  MỖI nhóm ĐÚNG 3 ý, đặt nhãn hướng (side_vi + side_en) cho từng nhóm (vd 3 lợi ích + 3 hạn chế).
-
-CHIA LƯỢT (QUAN TRỌNG — để output không bị cắt):
-- Mỗi lần gọi CHỈ trả ĐÚNG MỘT nhóm trong "groups".
-- LƯỢT 1: trả "total_groups" (1 hoặc 2) + "topic_en/topic_vi/essay_type" + NHÓM THỨ NHẤT (đủ 3 ý).
-- LƯỢT 2 (chỉ khi đề 2 phần): trả NHÓM THỨ HAI (đủ 3 ý). Tin nhắn kèm "ĐÃ TẠO" là nhóm 1 ->
-  TUYỆT ĐỐI KHÔNG lặp lại từ vựng/collocation/cấu trúc đã dùng ở nhóm 1.
+BƯỚC 1 — XÁC ĐỊNH SỐ HƯỚNG cần triển khai:
+- Nếu chủ đề chỉ MỘT hướng (vd "lợi ích của A", "nguyên nhân của B", một quan điểm) -> tạo 1 NHÓM gồm ĐÚNG 3 ý.
+- Nếu là đề HAI PHẦN hoàn chỉnh (lợi ích & hạn chế; nguyên nhân & giải pháp; vấn đề & giải pháp;
+  thảo luận hai quan điểm; agree/disagree có khai thác cả hai mặt) -> tạo 2 NHÓM, MỖI nhóm ĐÚNG 3 ý
+  (vd 3 lợi ích + 3 hạn chế). Đặt nhãn hướng cho mỗi nhóm (side_vi + side_en).
 
 BƯỚC 2 — MỖI Ý gồm 5 phần:
 - "idea_vi": câu ĐƠN, ngắn gọn, chung chung, đi thẳng giới thiệu luận điểm; RÕ RÀNG thuộc về chủ đề.
 - "support_vi": ĐÚNG MỘT câu PHỨC (KHÔNG tách thành 2 câu), nhưng phải GIẢI THÍCH SÂU & CỤ THỂ để đạt chuẩn Band 8.0+:
   nêu rõ CƠ CHẾ "vì sao" rồi dẫn tới KẾT QUẢ/HỆ QUẢ cụ thể theo logic NGUYÊN NHÂN -> KẾT QUẢ
-  ("từ đó", "nhờ vậy", "do đó", "khiến cho"); nên lồng MỘT chi tiết hoặc ví dụ cụ thể (đối tượng/bối cảnh/kết quả đo được)
+  ("từ đó", "nhờ vậy", "do đó", "khiến cho"); BẮT BUỘC lồng MỘT chi tiết hoặc ví dụ cụ thể (đối tượng/bối cảnh/kết quả đo được)
   để luận điểm thuyết phục thay vì nói chung chung; dùng ngữ pháp cao cấp (mệnh đề quan hệ/phụ thuộc/phân từ).
 - "idea_en" + "support_en": bản tiếng Anh phải SÁT NGHĨA và NGANG ĐỘ CHI TIẾT với bản Việt — KHÔNG thêm/bớt ý,
   KHÔNG đơn giản hoá; support_en cũng là MỘT câu phức ngữ pháp cao cấp (thereby, which in turn, as a result,
-  enabling ... to, thus -ing). Band 8.0+, tự nhiên, chính xác.
+  enabling ... to, thus -ing). Tiếng Anh chuẩn Band 8.0+: tự nhiên, chính xác, KHÔNG dịch word-by-word.
 - "vocab": 4-6 từ/cụm Band cao, BẮT BUỘC xuất hiện NGUYÊN VĂN trong idea_en/support_en của ý đó, kèm nghĩa Việt ngắn gọn.
-  Ưu tiên collocation & academic lexis thật sự "đáng học" (chính xác, tự nhiên, ít phổ thông);
-  TRÁNH từ cơ bản/chung chung (không liệt kê "important", "good", "many", "people"...). Trong khoảng 4-6, càng nhiều cụm hay càng tốt.
+  CHỈ chọn collocation/academic lexis trình độ Band 7.5-8+ (chính xác, tự nhiên, ít phổ thông);
+  TUYỆT ĐỐI tránh từ cơ bản/chung chung ("important", "good", "many", "people", "very", "help"...).
+  Ưu tiên CỤM (collocation) hơn từ đơn (vd "alleviate traffic congestion", "foster critical thinking").
+
+VÍ DỤ MẪU (chủ đề "Lợi ích của robot" — học theo CHẤT LƯỢNG & ĐỘ KHỚP EN-VI này, KHÔNG chép lại):
+- idea_vi: "Robot giúp con người làm việc an toàn hơn."
+- support_vi: "Vì được lập trình để vận hành hoàn toàn tự động và chế tạo từ vật liệu siêu bền, robot có thể thay con người đảm nhận những tác vụ nguy hiểm như xử lý hoá chất độc hại hay sửa chữa dưới đáy biển, từ đó giảm mạnh số vụ tai nạn lao động."
+- idea_en: "Robots help humans carry out their work far more safely."
+- support_en: "Because they are programmed to operate fully autonomously and are built from highly durable materials, robots can take over hazardous tasks such as handling toxic chemicals or carrying out repairs on the seabed, thereby drastically reducing the number of workplace accidents."
+- vocab: operate autonomously; highly durable materials; take over hazardous tasks; handle toxic chemicals; workplace accidents.
 
 QUY TẮC TỪ KHOÁ (RẤT QUAN TRỌNG):
 - TUYỆT ĐỐI KHÔNG lặp y nguyên cụm từ khoá của chủ đề ở mọi câu tiếng Anh.
@@ -48,14 +50,20 @@ QUY TẮC TỪ KHOÁ (RẤT QUAN TRỌNG):
 QUY TẮC CHUNG:
 - BÁM SÁT SONG NGỮ: idea_en phải khớp idea_vi, support_en phải khớp support_vi về cả Ý lẫn ĐỘ CHI TIẾT —
   người đọc đối chiếu hai bản phải thấy trùng khớp, không bản nào thừa/thiếu ý hay nông/sâu hơn bản kia.
-- Tối đa hoá paraphrase: không lặp từ vựng, collocation hay cấu trúc ngữ pháp giữa các ý.
+- Tối đa hoá paraphrase: KHÔNG lặp từ vựng, collocation hay cấu trúc ngữ pháp giữa các ý (kể cả giữa 2 nhóm).
+- Mỗi ý là một LUẬN ĐIỂM KHÁC HẲN nhau (không trùng ý, không diễn đạt lại cùng một ý bằng từ khác).
 - Tiếng Anh tự nhiên, chính xác (không dùng từ hiếm chỉ để cho "kêu").
+
+TỰ KIỂM trước khi trả (BẮT BUỘC, không in phần kiểm tra ra ngoài):
+1) Mỗi mục "vocab" có XUẤT HIỆN NGUYÊN VĂN trong idea_en/support_en không? Nếu không -> sửa lại.
+2) support_vi & support_en có đúng MỘT câu phức, có đủ CƠ CHẾ + KẾT QUẢ + chi tiết cụ thể không?
+3) EN và VI có khớp ý & ngang độ chi tiết không?
+4) Các ý (và 2 nhóm) có bị lặp từ vựng/cấu trúc không? Nếu có -> đổi cho đa dạng.
 
 Cũng cung cấp: "topic_en", "topic_vi", "essay_type" (đoán dạng bài Task 2, ghi tiếng Việt).
 
 CHỈ trả về JSON THUẦN (không markdown, không code fence, không lời dẫn), đúng cấu trúc:
 {
-  "total_groups":1,
   "topic_en":"string","topic_vi":"string","essay_type":"string",
   "groups":[
     {
@@ -66,45 +74,28 @@ CHỈ trả về JSON THUẦN (không markdown, không code fence, không lời 
       ]
     }
   ]
-}
-(LƯỢT 2 có thể bỏ total_groups & topic_*; "groups" LUÔN chỉ chứa MỘT nhóm của lượt hiện tại.)`;
+}`;
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
 
-  let topic = "", part = 1, prev = "";
-  try {
-    const body = await req.json();
-    topic = (body.topic || "").toString().trim();
-    part = parseInt(body.part, 10) || 1;
-    prev = (body.prev || "").toString().slice(0, 6000);
-  } catch (e) { return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 }); }
+  let topic = "";
+  try { topic = ((await req.json()).topic || "").toString().trim(); }
+  catch (e) { return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 }); }
   if (!topic) return new Response("Vui lòng nhập một chủ đề.", { status: 400 });
   if (topic.length > 600) return new Response("Chủ đề/đề bài quá dài (tối đa ~600 ký tự).", { status: 400 });
-
-  // Hướng dẫn từng lượt (chia theo hướng để JSON mỗi lượt nhỏ, không bị cắt).
-  const SECTIONS = {
-    1: "LƯỢT 1: Phân loại số hướng của đề. Trả \"total_groups\" (1 hoặc 2) + \"topic_en\"/\"topic_vi\"/\"essay_type\" + trong \"groups\" CHỈ NHÓM THỨ NHẤT (đủ 3 ý; side_vi/side_en rỗng nếu đề 1 hướng).",
-    2: "LƯỢT 2: Đề này có 2 hướng. Trong \"groups\" CHỈ trả NHÓM THỨ HAI (đủ 3 ý, kèm side_vi/side_en). KHÔNG lặp lại từ vựng/cấu trúc của nhóm 1 ở 'ĐÃ TẠO'. Không cần trả lại topic/essay_type/total_groups.",
-  };
-  const userMsg =
-    "Chủ đề / Đề bài: " + topic + "\n\n" +
-    (prev ? ("ĐÃ TẠO (nhóm 1 — KHÔNG lặp lại từ vựng/cấu trúc):\n" + prev + "\n\n") : "") +
-    (SECTIONS[part] || SECTIONS[1]) +
-    "\n\nCHỈ trả JSON thuần đúng cấu trúc đã quy định (không markdown, không lời dẫn).";
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1800,
+      max_tokens: 4096,
       stream: true,
-      // Prompt caching: phần system (luật nội dung) cố định -> cache để lượt 2 nhanh & rẻ hơn (tự bỏ qua nếu chưa bật).
-      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: [{ role: "user", content: userMsg }],
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: "Chủ đề / Đề bài: " + topic }],
     }),
   });
 
