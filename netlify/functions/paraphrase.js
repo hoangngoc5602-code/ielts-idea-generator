@@ -5,8 +5,9 @@
 //  -> viết lại đúng band đó + giải thích theo 4 tiêu chí.
 // ============================================================
 
-// Haiku: nhanh ~3 lần để viết lại + giải thích xong trong giới hạn thời gian.
-const MODEL = "claude-haiku-4-5-20251001";
+// Sonnet cho chất lượng cao. Chia 2 LƯỢT NGẮN (frontend gọi 2 lần: lượt 1 = bản viết lại + TR + CC;
+// lượt 2 = LR + GRA) để mỗi lượt xong gọn trong ~26s của Netlify -> không bị cắt giữa chừng.
+const MODEL = "claude-sonnet-4-6";
 
 const SYSTEM_PROMPT = `Bạn là chuyên gia luyện IELTS Writing Task 2 cho học viên người Việt.
 Học viên gửi một (vài) câu họ tự viết, kèm ĐỀ BÀI để bạn hiểu bối cảnh, và BAND MỤC TIÊU họ muốn.
@@ -32,7 +33,9 @@ NGUYÊN TẮC:
 ### Grammatical Range & Accuracy (ngữ pháp)
 [cấu trúc đã nâng cấp/sửa lỗi, trích nguyên văn]
 
-QUY TẮC TRÌNH BÀY (để dễ đọc): với mỗi tiêu chí, dùng 2-3 GẠCH ĐẦU DÒNG ngắn (KHÔNG viết đoạn dài liền mạch), IN ĐẬM thay đổi chính. Mỗi gạch đầu dòng so sánh rõ TRƯỚC (bản gốc yếu chỗ nào) → SAU (bản mới nâng thế nào) và TRÍCH nguyên văn từ/cụm/cấu trúc trong bản mới làm dẫn chứng. Không nói chung chung, không từ chối; luôn đưa ra bản viết lại và giải thích đầy đủ, dễ đọc.`;
+QUY TẮC TRÌNH BÀY (để dễ đọc): với mỗi tiêu chí, dùng 2-3 GẠCH ĐẦU DÒNG ngắn (KHÔNG viết đoạn dài liền mạch), IN ĐẬM thay đổi chính. Mỗi gạch đầu dòng so sánh rõ TRƯỚC (bản gốc yếu chỗ nào) → SAU (bản mới nâng thế nào) và TRÍCH nguyên văn từ/cụm/cấu trúc trong bản mới làm dẫn chứng. Không nói chung chung, không từ chối; luôn đưa ra bản viết lại và giải thích đầy đủ, dễ đọc.
+VIẾT GỌN & HOÀN TẤT: mỗi tiêu chí tối đa 3 gạch đầu dòng, mỗi gạch 1-2 câu, đi thẳng vào ý.
+XUẤT THEO TỪNG LƯỢT: chỉ xuất ĐÚNG các mục được liệt kê trong tin nhắn của lượt đó; KHÔNG lặp lại mục/đoạn đã có ở phần "ĐÃ XUẤT"; giữ NHẤT QUÁN với bản viết lại đã tạo (đúng một bản, không viết lại khác đi). Không thêm mở đầu/kết thừa.`;
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -40,12 +43,14 @@ export default async (req) => {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
 
-  let text = "", prompt = "", targetBand = "";
+  let text = "", prompt = "", targetBand = "", part = 1, prev = "";
   try {
     const body = await req.json();
     text = (body.text || "").toString().trim();
     prompt = (body.prompt || "").toString().trim();
     targetBand = (body.targetBand || "").toString().trim();
+    part = parseInt(body.part, 10) || 1;
+    prev = (body.prev || "").toString().slice(0, 6000);
   } catch (e) {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
@@ -53,11 +58,28 @@ export default async (req) => {
   if (!targetBand) return new Response("Vui lòng chọn band điểm mong muốn.", { status: 400 });
   if (text.length > 4000) return new Response("Đoạn văn quá dài (tối đa ~4000 ký tự).", { status: 400 });
 
+  // 2 LƯỢT NGẮN để không chạm giới hạn ~26s (Sonnet chậm hơn Haiku ~3 lần).
+  const SECTIONS = {
+    1: "LƯỢT 1/2 — CHỈ xuất các mục sau:\n" +
+       "## Bản viết lại (mục tiêu Band " + targetBand + ")\n" +
+       "[câu/đoạn tiếng Anh đã viết lại — ĐẦY ĐỦ]\n\n" +
+       "## Vì sao bản này đạt Band " + targetBand + " — theo 4 tiêu chí\n" +
+       "### Task Response (ý & lập luận)\n" +
+       "### Coherence & Cohesion (mạch lạc & liên kết)\n" +
+       "(mỗi tiêu chí 2-3 gạch đầu dòng theo khung TRƯỚC→SAU kèm trích dẫn)",
+    2: "LƯỢT 2/2 — CHỈ xuất các mục sau (bám ĐÚNG bản viết lại ở 'ĐÃ XUẤT', KHÔNG lặp lại bản viết lại):\n" +
+       "### Lexical Resource (từ vựng)\n" +
+       "### Grammatical Range & Accuracy (ngữ pháp)\n" +
+       "(mỗi tiêu chí 2-3 gạch đầu dòng; trích nguyên văn từ/cấu trúc trong bản viết lại)",
+  };
+
   const userMsg =
     "ĐỀ BÀI (bối cảnh):\n" + (prompt || "(học viên không cung cấp đề — hãy suy luận bối cảnh hợp lý)") + "\n\n" +
     "BAND MỤC TIÊU: " + targetBand + "\n\n" +
     "CÂU/ĐOẠN CỦA HỌC VIÊN:\n" + text + "\n\n" +
-    "Hãy viết lại đúng band mục tiêu và giải thích theo định dạng đã yêu cầu.";
+    (prev ? ("PHẦN ĐÃ XUẤT (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
+    (SECTIONS[part] || SECTIONS[1]) +
+    "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết.";
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -68,9 +90,10 @@ export default async (req) => {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 2500,
+      max_tokens: 1800,
       stream: true,
-      system: SYSTEM_PROMPT,
+      // Prompt caching: phần system cố định -> cache để lượt 2 nhanh & rẻ hơn (tự bỏ qua nếu chưa bật).
+      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userMsg }],
     }),
   });

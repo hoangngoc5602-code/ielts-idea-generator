@@ -6,8 +6,9 @@
 //  API key đọc từ biến môi trường ANTHROPIC_API_KEY (không nằm trong file).
 // ============================================================
 
-// Sonnet cho chất lượng cao. Được chấm theo NHIỀU LƯỢT NGẮN (frontend gọi 3 lần),
-// mỗi lượt đủ ngắn để không vượt giới hạn thời gian Netlify -> không bị cắt.
+// Sonnet cho chất lượng cao. Được chấm theo NHIỀU LƯỢT NGẮN (frontend gọi 5 lần,
+// mỗi tiêu chí 1 lượt: TR / CC / LR / GRA / tổng kết) — mỗi lượt đủ ngắn để KHÔNG
+// vượt giới hạn ~26s của Netlify và không chạm trần số chữ -> không bị cắt giữa chừng.
 const MODEL = "claude-sonnet-4-6";
 
 // ---- RUBRIC GIÁM KHẢO (rút gọn trung thực từ file Examiner Grading Guide, trọng tâm Task 2) ----
@@ -115,7 +116,7 @@ export default async (req) => {
     essay = (body.essay || "").toString().trim();
     prompt = (body.prompt || "").toString().trim();
     part = parseInt(body.part, 10) || 1;
-    prev = (body.prev || "").toString().slice(0, 8000);
+    prev = (body.prev || "").toString().slice(0, 12000);
   } catch (e) {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
@@ -124,10 +125,14 @@ export default async (req) => {
   if (essay.length > 8000) return new Response("Bài viết quá dài (tối đa ~8000 ký tự).", { status: 400 });
   if (prompt.length > 2000) return new Response("Đề bài quá dài.", { status: 400 });
 
+  // 5 LƯỢT NGẮN: mỗi tiêu chí một lượt riêng (LR & GRA tách riêng vì danh sách lỗi dài nhất),
+  // để KHÔNG lượt nào chạm trần số chữ hay quá ~26s -> không còn bị cắt giữa chừng.
   const SECTIONS = {
-    1: "LƯỢT 1/3 — CHỈ xuất các mục sau:\n## Điểm tổng: X.X\n(ngay dưới là 4 gạch đầu dòng IN ĐẬM: Task Response (TR), Coherence & Cohesion (CC), Lexical Resource (LR), Grammatical Range & Accuracy (GRA) kèm band)\n### Task Response (TR) — Band X\n(3 gạch đầu dòng: Khớp Band X vì / Chưa lên Band X+1 vì / Dẫn chứng & lỗi)",
-    2: "LƯỢT 2/3 — CHỈ xuất các mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Coherence & Cohesion (CC) — Band X\n### Lexical Resource (LR) — Band X\n(mỗi tiêu chí 3 gạch đầu dòng theo khung; LR liệt kê HẾT lỗi chính tả/từ vựng kèm sửa)",
-    3: "LƯỢT 3/3 — CHỈ xuất các mục sau:\n### Grammatical Range & Accuracy (GRA) — Band X\n(3 gạch đầu dòng; liệt kê HẾT lỗi ngữ pháp/dấu câu kèm sửa)\n### Tổng kết & cách lên band\n(4-6 gạch đầu dòng, ưu tiên tiêu chí yếu nhất)",
+    1: "LƯỢT 1/5 — CHỈ xuất các mục sau:\n## Điểm tổng: X.X\n(ngay dưới là 4 gạch đầu dòng IN ĐẬM: Task Response (TR), Coherence & Cohesion (CC), Lexical Resource (LR), Grammatical Range & Accuracy (GRA) kèm band)\n### Task Response (TR) — Band X\n(3 gạch đầu dòng: Khớp Band X vì / Chưa lên Band X+1 vì / Dẫn chứng & lỗi)",
+    2: "LƯỢT 2/5 — CHỈ xuất mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Coherence & Cohesion (CC) — Band X\n(3 gạch đầu dòng theo khung: Khớp Band X vì / Chưa lên Band X+1 vì / Dẫn chứng & lỗi)",
+    3: "LƯỢT 3/5 — CHỈ xuất mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Lexical Resource (LR) — Band X\n(3 gạch đầu dòng; mục 'Dẫn chứng & lỗi' LIỆT KÊ HẾT lỗi chính tả/từ vựng/collocation, MỖI lỗi 1 gạch đầu dòng kèm sửa đúng)",
+    4: "LƯỢT 4/5 — CHỈ xuất mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Grammatical Range & Accuracy (GRA) — Band X\n(3 gạch đầu dòng; mục 'Dẫn chứng & lỗi' LIỆT KÊ HẾT lỗi ngữ pháp/dấu câu, MỖI lỗi 1 gạch đầu dòng kèm sửa đúng)",
+    5: "LƯỢT 5/5 — CHỈ xuất mục sau:\n### Tổng kết & cách lên band\n(4-6 gạch đầu dòng, ưu tiên tiêu chí yếu nhất)",
   };
   const userMsg =
     "ĐỀ BÀI (Task 2):\n" + prompt + "\n\n" +
@@ -147,7 +152,9 @@ export default async (req) => {
       model: MODEL,
       max_tokens: 1600,
       stream: true,
-      system: SYSTEM_PROMPT,
+      // Prompt caching: rubric (system) rất dài & cố định -> cache lại để 4 lượt sau
+      // xử lý nhanh hơn (đỡ chạm giới hạn ~26s) và rẻ hơn. Tự bỏ qua nếu API chưa bật cache.
+      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userMsg }],
     }),
   });

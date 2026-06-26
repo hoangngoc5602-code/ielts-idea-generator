@@ -315,6 +315,26 @@ let loadingTimer=null;
 function startLoadingMsgs(){const el=document.getElementById("statusMsg");let i=0;el.textContent=LOADING_MSGS[0];loadingTimer=setInterval(()=>{i=(i+1)%LOADING_MSGS.length;el.textContent=LOADING_MSGS[i];},3500);}
 function stopLoadingMsgs(){if(loadingTimer){clearInterval(loadingTimer);loadingTimer=null;}}
 function setTopic(t){const ta=document.getElementById("topic");ta.value=t;ta.focus();}
+// Gọi 1 lượt của Tìm ý tưởng -> trả object JSON đã parse (mỗi lượt JSON nhỏ nên ít rủi ro cắt)
+async function fetchIdeasPart(payload){
+  const resp=await fetch(FN.ideas,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+  const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
+  while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
+  let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
+  try{return JSON.parse(txt);}
+  catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn). Cậu bấm Tạo ý tưởng lại giúp tớ nha!");}
+}
+// Tóm tắt nhóm 1 (câu Anh + vocab) làm ngữ cảnh cho lượt 2, để AI không lặp lại
+function ideasContext(groups){
+  const lines=[];
+  (groups||[]).forEach(g=>(g.ideas||[]).forEach(it=>{
+    if(it.idea_en)lines.push(it.idea_en);
+    if(it.support_en)lines.push(it.support_en);
+    if(Array.isArray(it.vocab))lines.push(it.vocab.map(v=>v.en).join(", "));
+  }));
+  return lines.join("\n");
+}
 async function generate(){
   const topic=document.getElementById("topic").value.trim();
   const btn=document.getElementById("goBtn"),statusEl=document.getElementById("status"),errEl=document.getElementById("ideaError"),errText=document.getElementById("ideaErrorText"),resEl=document.getElementById("results");
@@ -322,15 +342,20 @@ async function generate(){
   if(!topic){errText.textContent="Cậu nhập một chủ đề trước đã nha.";errEl.className="error glass show";return;}
   btn.disabled=true;btn.classList.add("loading");statusEl.className="show";startLoadingMsgs();
   try{
-    const resp=await fetch(FN.ideas,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic})});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
-    const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
-    while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
-    let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
-    let data;
-    try{data=JSON.parse(txt);}
-    catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn). Cậu bấm Tạo ý tưởng lại giúp tớ nha!");}
+    // LƯỢT 1: metadata + nhóm 1 (+ số hướng total_groups)
+    const data=await fetchIdeasPart({topic,part:1});
+    if(!Array.isArray(data.groups)) data.groups=[];
+    statusEl.className="";stopLoadingMsgs();
     renderIdeas(data);
+    // LƯỢT 2: nếu đề 2 hướng -> lấy nốt nhóm 2 (truyền nhóm 1 làm ngữ cảnh tránh lặp)
+    const total=parseInt(data.total_groups,10)||data.groups.length;
+    if(total>=2 && data.groups.length<2){
+      const data2=await fetchIdeasPart({topic,part:2,prev:ideasContext(data.groups)});
+      if(data2&&Array.isArray(data2.groups)&&data2.groups.length){
+        data.groups=data.groups.concat(data2.groups);
+        renderIdeas(data);
+      }
+    }
   }catch(err){let msg=err.message||"Có gì đó trục trặc rồi.";if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";errText.textContent=msg;errEl.className="error glass show";}
   finally{btn.disabled=false;btn.classList.remove("loading");statusEl.className="";stopLoadingMsgs();}
 }
@@ -406,13 +431,30 @@ document.getElementById("examList").addEventListener("click",e=>{
   else if(b.dataset.act==="score"){setTab("score");document.getElementById("scorePrompt").value=it.question;document.getElementById("scoreEssay").focus();}
 });
 
-/* TAB 3: Paraphrase */
-function runParaphrase(){
+/* TAB 3: Paraphrase — gọi 2 LƯỢT nối tiếp (giống chấm điểm) để Sonnet không bị cắt */
+async function runParaphrase(){
   const text=document.getElementById("paraText").value.trim(),prompt=document.getElementById("paraPrompt").value.trim(),targetBand=document.getElementById("paraBand").value;
   const box=document.getElementById("paraOut"),md=document.getElementById("paraMd"),btn=document.getElementById("paraBtn");
-  if(!text){box.classList.add("show");md.innerHTML='<div class="err-inline">Vui lòng nhập câu/đoạn bạn muốn nâng cấp.</div>';return;}
-  if(!targetBand){box.classList.add("show");md.innerHTML='<div class="err-inline">Vui lòng chọn band mong muốn.</div>';return;}
-  streamTool(FN.para,{text,prompt,targetBand},box,md,btn);
+  box.classList.add("show");
+  if(!text){md.innerHTML='<div class="err-inline">Vui lòng nhập câu/đoạn bạn muốn nâng cấp.</div>';return;}
+  if(!targetBand){md.innerHTML='<div class="err-inline">Vui lòng chọn band mong muốn.</div>';return;}
+  fadeIn(box);
+  md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang viết lại và soi theo từng tiêu chí, chữ sẽ hiện dần nha…</div>';
+  btn.disabled=true; btn.classList.add("loading");
+  let acc="";
+  try{
+    for(const p of [1,2]){
+      const payload={text,prompt,targetBand,part:p}; if(acc) payload.prev=acc;
+      const prefix = acc ? acc+"\n\n" : "";
+      const cur = await streamPart(FN.para, payload, md, prefix);
+      acc = prefix + cur;
+    }
+    if(!acc.trim()) md.innerHTML="<p>Chưa có nội dung trả về. Bạn thử lại nhé.</p>";
+  }catch(err){
+    let msg=err.message||"Đã có lỗi xảy ra.";
+    if(/Failed to fetch|NetworkError/i.test(msg)) msg="Không gọi được máy chủ. Nếu bạn mở file trực tiếp thì cần deploy lên Netlify rồi mở qua link Netlify.";
+    md.innerHTML=(acc?renderMarkdown(acc):"")+'<div class="err-inline">'+esc(msg)+'</div>';
+  }finally{ btn.disabled=false; btn.classList.remove("loading"); }
 }
 /* TAB 4: Chấm điểm */
 async function streamPart(url, payload, mdEl, prefix){
@@ -433,7 +475,7 @@ async function runScore(){
   btn.disabled=true; btn.classList.add("loading");
   let acc="";
   try{
-    for(const p of [1,2,3]){
+    for(const p of [1,2,3,4,5]){
       const payload={essay,prompt,part:p}; if(acc) payload.prev=acc;
       const prefix = acc ? acc+"\n\n" : "";
       const cur = await streamPart(FN.score, payload, md, prefix);
