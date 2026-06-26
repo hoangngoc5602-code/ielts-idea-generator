@@ -6,6 +6,8 @@
 //  API key đọc từ biến môi trường ANTHROPIC_API_KEY (không nằm trong file).
 // ============================================================
 
+// Sonnet cho chất lượng cao. Được chấm theo NHIỀU LƯỢT NGẮN (frontend gọi 3 lần),
+// mỗi lượt đủ ngắn để không vượt giới hạn thời gian Netlify -> không bị cắt.
 const MODEL = "claude-sonnet-4-6";
 
 // ---- RUBRIC GIÁM KHẢO (rút gọn trung thực từ file Examiner Grading Guide, trọng tâm Task 2) ----
@@ -64,6 +66,7 @@ YÊU CẦU ĐẦU RA (rất quan trọng):
 - Phân tích phải đi tới mức TỪNG CÂU khi cần: chỉ rõ câu nào yếu/sai và vì sao, câu nào tốt và vì sao.
 - Cấm phán đoán vô căn cứ: mọi nhận định phải có lập luận dựa trên rubric.
 - KHÔNG được từ chối, KHÔNG nói "không rõ/không biết". Luôn cam kết một band cụ thể kèm lý do. Nếu thông tin thiếu, vẫn phải đưa ra đánh giá hợp lý nhất và giải thích.
+- CHẤM THEO TỪNG LƯỢT: chỉ xuất ĐÚNG các mục được liệt kê trong tin nhắn của lượt đó; KHÔNG thêm mục khác, KHÔNG lặp lại mục đã chấm ở phần "ĐÃ CHẤM"; GIỮ NHẤT QUÁN điểm số với phần đã chấm (nếu có). Không viết mở đầu/kết thừa.
 
 TRÌNH BÀY ĐỂ DỄ ĐỌC (bắt buộc):
 - Viết đoạn NGẮN (2-3 câu); tách ý bằng gạch đầu dòng; IN ĐẬM kết luận và từ khoá quan trọng. Tránh đoạn văn dài liền mạch khó đọc.
@@ -106,11 +109,13 @@ export default async (req) => {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
 
-  let essay = "", prompt = "";
+  let essay = "", prompt = "", part = 1, prev = "";
   try {
     const body = await req.json();
     essay = (body.essay || "").toString().trim();
     prompt = (body.prompt || "").toString().trim();
+    part = parseInt(body.part, 10) || 1;
+    prev = (body.prev || "").toString().slice(0, 8000);
   } catch (e) {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
@@ -119,10 +124,17 @@ export default async (req) => {
   if (essay.length > 8000) return new Response("Bài viết quá dài (tối đa ~8000 ký tự).", { status: 400 });
   if (prompt.length > 2000) return new Response("Đề bài quá dài.", { status: 400 });
 
+  const SECTIONS = {
+    1: "LƯỢT 1/3 — CHỈ xuất các mục sau:\n## Điểm tổng: X.X\n(ngay dưới là 4 gạch đầu dòng IN ĐẬM: Task Response (TR), Coherence & Cohesion (CC), Lexical Resource (LR), Grammatical Range & Accuracy (GRA) kèm band)\n### Task Response (TR) — Band X\n(3 gạch đầu dòng: Khớp Band X vì / Chưa lên Band X+1 vì / Dẫn chứng & lỗi)",
+    2: "LƯỢT 2/3 — CHỈ xuất các mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Coherence & Cohesion (CC) — Band X\n### Lexical Resource (LR) — Band X\n(mỗi tiêu chí 3 gạch đầu dòng theo khung; LR liệt kê HẾT lỗi chính tả/từ vựng kèm sửa)",
+    3: "LƯỢT 3/3 — CHỈ xuất các mục sau:\n### Grammatical Range & Accuracy (GRA) — Band X\n(3 gạch đầu dòng; liệt kê HẾT lỗi ngữ pháp/dấu câu kèm sửa)\n### Tổng kết & cách lên band\n(4-6 gạch đầu dòng, ưu tiên tiêu chí yếu nhất)",
+  };
   const userMsg =
     "ĐỀ BÀI (Task 2):\n" + prompt + "\n\n" +
     "BÀI VIẾT CỦA HỌC VIÊN:\n" + essay + "\n\n" +
-    "Hãy chấm bài này như một giám khảo IELTS, theo đúng rubric và định dạng đã yêu cầu.";
+    (prev ? ("PHẦN ĐÃ CHẤM (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
+    (SECTIONS[part] || SECTIONS[1]) +
+    "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết. Tuân thủ rubric và cách trình bày gạch đầu dòng dễ đọc.";
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -133,7 +145,7 @@ export default async (req) => {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 4000,
+      max_tokens: 1600,
       stream: true,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMsg }],

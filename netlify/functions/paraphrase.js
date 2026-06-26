@@ -5,7 +5,8 @@
 //  -> viết lại đúng band đó + giải thích theo 4 tiêu chí.
 // ============================================================
 
-const MODEL = "claude-sonnet-4-6";
+// Haiku: nhanh ~3 lần để viết lại + giải thích xong trong giới hạn thời gian.
+const MODEL = "claude-haiku-4-5-20251001";
 
 const SYSTEM_PROMPT = `Bạn là chuyên gia luyện IELTS Writing Task 2 cho học viên người Việt.
 Học viên gửi một (vài) câu họ tự viết, kèm ĐỀ BÀI để bạn hiểu bối cảnh, và BAND MỤC TIÊU họ muốn.
@@ -67,7 +68,7 @@ export default async (req) => {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 3000,
+      max_tokens: 2500,
       stream: true,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMsg }],

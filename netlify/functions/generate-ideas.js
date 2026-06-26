@@ -5,7 +5,8 @@
 //  API key đọc từ biến môi trường ANTHROPIC_API_KEY.
 // ============================================================
 
-const MODEL = "claude-sonnet-4-6";
+// Haiku: nhanh ~3 lần, đủ tốt cho dạng có cấu trúc + tránh bị timeout/cắt cụt.
+const MODEL = "claude-haiku-4-5-20251001";
 
 const SYSTEM_PROMPT = `Bạn là huấn luyện viên IELTS Writing Task 2 cho người Việt, nhắm Band 8.0+.
 Người học nhập một CHỦ ĐỀ (tiếng Việt hoặc tiếng Anh). Hãy brainstorm ý tưởng song ngữ.
@@ -67,7 +68,7 @@ export default async (req) => {
     headers: { "x-api-key": API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 4000,
+      max_tokens: 3500,
       stream: true,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: "Chủ đề / Đề bài: " + topic }],

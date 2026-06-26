@@ -138,11 +138,11 @@
 
   .tool-output{display:none;margin-top:24px;padding:24px;} .tool-output.show{display:block;}
   .thinking{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-weight:600;}
-  .md h3{font-size:18px;margin:20px 0 8px;color:#fff;} .md h3:first-child{margin-top:0;}
-  .md h4{font-size:14.5px;margin:16px 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;}
-  .md p{margin:0 0 10px;color:#E7EAF5;font-size:15.5px;line-height:1.68;}
-  .md ul{margin:0 0 12px;padding-left:6px;list-style:none;}
-  .md li{position:relative;padding-left:20px;margin:6px 0;color:#E7EAF5;font-size:15.5px;line-height:1.62;}
+  .md h3{font-size:18px;margin:24px 0 12px;color:#fff;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);} .md h3:first-child{margin-top:0;padding-top:0;border-top:0;}
+  .md h4{font-size:15.5px;margin:16px 0 7px;color:var(--accent);font-weight:700;}
+  .md p{margin:0 0 11px;color:#E7EAF5;font-size:15px;line-height:1.72;}
+  .md ul{margin:0 0 14px;padding-left:6px;list-style:none;}
+  .md li{position:relative;padding-left:22px;margin:9px 0;color:#E7EAF5;font-size:15px;line-height:1.66;}
   .md li::before{content:"";position:absolute;left:4px;top:10px;width:6px;height:6px;border-radius:50%;background:var(--ring);}
   .md strong{color:#fff;font-weight:700;} .md code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;font-size:14px;color:#E9D5FF;}
   .err-inline{background:rgba(251,113,133,.13);border:1px solid rgba(251,113,133,.35);color:var(--danger-soft);border-radius:12px;padding:13px 15px;font-size:14.5px;}
@@ -327,7 +327,9 @@ async function generate(){
     const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
     let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
-    let data;try{data=JSON.parse(txt);}catch(e){data={raw:txt};}
+    let data;
+    try{data=JSON.parse(txt);}
+    catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn). Cậu bấm Tạo ý tưởng lại giúp tớ nha!");}
     renderIdeas(data);
   }catch(err){let msg=err.message||"Có gì đó trục trặc rồi.";if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";errText.textContent=msg;errEl.className="error glass show";}
   finally{btn.disabled=false;btn.classList.remove("loading");statusEl.className="";stopLoadingMsgs();}
@@ -413,12 +415,36 @@ function runParaphrase(){
   streamTool(FN.para,{text,prompt,targetBand},box,md,btn);
 }
 /* TAB 4: Chấm điểm */
-function runScore(){
+async function streamPart(url, payload, mdEl, prefix){
+  const resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+  const reader=resp.body.getReader(),dec=new TextDecoder();let cur="";
+  while(true){const {done,value}=await reader.read();if(done)break;cur+=dec.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(prefix+cur);}
+  return cur;
+}
+async function runScore(){
   const essay=document.getElementById("scoreEssay").value.trim(),prompt=document.getElementById("scorePrompt").value.trim();
   const box=document.getElementById("scoreOut"),md=document.getElementById("scoreMd"),btn=document.getElementById("scoreBtn");
-  if(!essay){box.classList.add("show");md.innerHTML='<div class="err-inline">Vui lòng dán bài viết cần chấm.</div>';return;}
-  if(!prompt){box.classList.add("show");md.innerHTML='<div class="err-inline">Vui lòng dán đề bài.</div>';return;}
-  streamTool(FN.score,{essay,prompt},box,md,btn);
+  box.classList.add("show");
+  if(!essay){md.innerHTML='<div class="err-inline">Cậu dán bài viết cần chấm vào đã nha.</div>';return;}
+  if(!prompt){md.innerHTML='<div class="err-inline">Cậu dán đề bài vào giúp tớ nha.</div>';return;}
+  fadeIn(box);
+  md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang chấm kỹ theo từng tiêu chí, đợi tớ chút nha…</div>';
+  btn.disabled=true; btn.classList.add("loading");
+  let acc="";
+  try{
+    for(const p of [1,2,3]){
+      const payload={essay,prompt,part:p}; if(acc) payload.prev=acc;
+      const prefix = acc ? acc+"\n\n" : "";
+      const cur = await streamPart(FN.score, payload, md, prefix);
+      acc = prefix + cur;
+    }
+    if(!acc.trim()) md.innerHTML="<p>Chưa có kết quả. Cậu thử lại nha.</p>";
+  }catch(err){
+    let msg=err.message||"Có gì đó trục trặc rồi.";
+    if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";
+    md.innerHTML=(acc?renderMarkdown(acc):"")+'<div class="err-inline">'+esc(msg)+'</div>';
+  }finally{ btn.disabled=false; btn.classList.remove("loading"); }
 }
 
 /* Motion (GSAP) — tự tắt nếu người dùng bật giảm chuyển động */
