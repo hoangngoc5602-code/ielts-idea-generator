@@ -31,7 +31,7 @@ NGUYÊN TẮC:
 ### Grammatical Range & Accuracy (ngữ pháp)
 [cấu trúc đã nâng cấp/sửa lỗi, trích nguyên văn]
 
-QUY TẮC: giải thích phải CHI TIẾT — mỗi tiêu chí viết tối thiểu 3-5 câu, so sánh rõ TRƯỚC (bản gốc yếu chỗ nào) và SAU (bản mới sửa/nâng thế nào), luôn TRÍCH nguyên văn từ/cụm/cấu trúc trong bản mới làm dẫn chứng. Không nói chung chung, không từ chối; luôn đưa ra bản viết lại và giải thích đầy đủ.`;
+QUY TẮC TRÌNH BÀY (để dễ đọc): với mỗi tiêu chí, dùng 2-3 GẠCH ĐẦU DÒNG ngắn (KHÔNG viết đoạn dài liền mạch), IN ĐẬM thay đổi chính. Mỗi gạch đầu dòng so sánh rõ TRƯỚC (bản gốc yếu chỗ nào) → SAU (bản mới nâng thế nào) và TRÍCH nguyên văn từ/cụm/cấu trúc trong bản mới làm dẫn chứng. Không nói chung chung, không từ chối; luôn đưa ra bản viết lại và giải thích đầy đủ, dễ đọc.`;
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });

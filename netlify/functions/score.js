@@ -65,23 +65,40 @@ YÊU CẦU ĐẦU RA (rất quan trọng):
 - Cấm phán đoán vô căn cứ: mọi nhận định phải có lập luận dựa trên rubric.
 - KHÔNG được từ chối, KHÔNG nói "không rõ/không biết". Luôn cam kết một band cụ thể kèm lý do. Nếu thông tin thiếu, vẫn phải đưa ra đánh giá hợp lý nhất và giải thích.
 
-ĐỊNH DẠNG (markdown, dùng GẠCH ĐẦU DÒNG cho điểm — KHÔNG dùng bảng):
+TRÌNH BÀY ĐỂ DỄ ĐỌC (bắt buộc):
+- Viết đoạn NGẮN (2-3 câu); tách ý bằng gạch đầu dòng; IN ĐẬM kết luận và từ khoá quan trọng. Tránh đoạn văn dài liền mạch khó đọc.
+- Markdown; dùng gạch đầu dòng cho điểm và cho danh sách lỗi; KHÔNG dùng bảng.
+
+Theo ĐÚNG khung sau — mỗi tiêu chí trình bày bằng 3 gạch đầu dòng có nhãn in đậm:
+
 ## Điểm tổng: X.X
-- Task Response (TR): X
-- Coherence & Cohesion (CC): X
-- Lexical Resource (LR): X
-- Grammatical Range & Accuracy (GRA): X
+- **Task Response (TR):** X
+- **Coherence & Cohesion (CC):** X
+- **Lexical Resource (LR):** X
+- **Grammatical Range & Accuracy (GRA):** X
 
 ### Task Response (TR) — Band X
-[phân tích sâu + trích dẫn + lỗi + descriptor khớp + negative feature chặn band]
+- **Khớp Band X vì:** trích ĐÚNG cụm mô tả trong band descriptor mà bài đáp ứng, kèm dẫn chứng từ bài.
+- **Chưa lên Band X+1 vì:** nêu rõ thiếu đặc điểm cụ thể nào của band trên (bám rubric); nếu có negative feature chặn band thì chỉ ra.
+- **Dẫn chứng & lỗi:** liệt kê TỪNG câu/cụm cụ thể (mỗi mục 1 gạch đầu dòng) kèm sửa đúng; nêu cả điểm tốt.
+
 ### Coherence & Cohesion (CC) — Band X
-[...]
+- **Khớp Band X vì:** ...
+- **Chưa lên Band X+1 vì:** ...
+- **Dẫn chứng & lỗi:** ...
+
 ### Lexical Resource (LR) — Band X
-[... liệt kê hết lỗi chính tả/từ vựng, trích dẫn ...]
+- **Khớp Band X vì:** ...
+- **Chưa lên Band X+1 vì:** ...
+- **Dẫn chứng & lỗi:** liệt kê HẾT lỗi chính tả/từ vựng/collocation kèm sửa.
+
 ### Grammatical Range & Accuracy (GRA) — Band X
-[... liệt kê hết lỗi ngữ pháp/dấu câu, trích dẫn + sửa ...]
+- **Khớp Band X vì:** ...
+- **Chưa lên Band X+1 vì:** ...
+- **Dẫn chứng & lỗi:** liệt kê HẾT lỗi ngữ pháp/dấu câu kèm sửa.
+
 ### Tổng kết & cách lên band
-[3-6 việc cụ thể cần làm để tăng band]`;
+- 4-6 việc cụ thể (mỗi việc 1 gạch đầu dòng), ưu tiên tiêu chí yếu nhất.`;
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
