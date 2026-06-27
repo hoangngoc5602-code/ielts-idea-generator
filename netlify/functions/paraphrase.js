@@ -5,6 +5,8 @@
 //  -> viết lại đúng band đó + giải thích theo 4 tiêu chí.
 // ============================================================
 
+import { requireAllowedUser } from "./authlib.js";
+
 // Sonnet cho chất lượng cao. Chia 2 LƯỢT NGẮN (frontend gọi 2 lần: lượt 1 = bản viết lại + TR + CC;
 // lượt 2 = LR + GRA) để mỗi lượt xong gọn trong ~26s của Netlify -> không bị cắt giữa chừng.
 const MODEL = "claude-sonnet-4-6";
@@ -39,6 +41,10 @@ XUẤT THEO TỪNG LƯỢT: chỉ xuất ĐÚNG các mục được liệt kê t
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  // CỔNG: chỉ người đã đăng nhập & nằm trong danh sách cho phép mới được dùng (chặn TRƯỚC khi tốn API).
+  const gate = await requireAllowedUser(req);
+  if (!gate.ok) return gate.response;
 
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });

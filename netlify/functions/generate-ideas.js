@@ -4,6 +4,8 @@
 //  API key đọc từ biến môi trường ANTHROPIC_API_KEY.
 // ============================================================
 
+import { requireAllowedUser } from "./authlib.js";
+
 // Haiku: nhanh ~3 lần Sonnet -> MỘT lần gọi là xong gọn trong ~26s, KHÔNG cần chia lượt,
 // không bị cắt. Đầu ra ý tưởng vốn có giới hạn (3-6 ý) nên Haiku chạy ổn định.
 // Chất lượng được siết bằng prompt chi tiết + VÍ DỤ MẪU + bước TỰ KIỂM bên dưới.
@@ -78,6 +80,11 @@ CHỈ trả về JSON THUẦN (không markdown, không code fence, không lời 
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  // CỔNG: chỉ người đã đăng nhập & nằm trong danh sách cho phép mới được dùng (chặn TRƯỚC khi tốn API).
+  const gate = await requireAllowedUser(req);
+  if (!gate.ok) return gate.response;
+
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
 

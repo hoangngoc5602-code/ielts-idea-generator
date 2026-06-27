@@ -164,17 +164,65 @@
   .clink .ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none;background:var(--grad);} .clink .ic svg{width:20px;height:20px;}
   .clink .meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;} .clink .meta .t{font-weight:700;} .clink .meta .s{font-size:12.5px;color:var(--ink-soft);font-weight:500;}
 
+  /* ===== ĐĂNG NHẬP (Giai đoạn 1): màn che + thanh người dùng. Dùng đúng bảng màu & phông sẵn có ===== */
+  .auth-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:
+      radial-gradient(900px 600px at 18% -8%, rgba(99,102,241,.32), transparent 60%),
+      radial-gradient(820px 560px at 88% 6%, rgba(139,92,246,.28), transparent 60%),
+      var(--bg-base);}
+  .auth-card{max-width:420px;width:100%;padding:34px 28px;text-align:center;}
+  .auth-card .brand{display:inline-flex;align-items:center;gap:10px;margin:0 auto 18px;padding:8px 17px 8px 9px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);}
+  .auth-card .brand .mark{width:35px;height:35px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--grad);box-shadow:0 6px 16px rgba(99,102,241,.5);}
+  .auth-card .brand .name{font-family:var(--font-head);font-weight:700;font-size:15px;color:var(--ink);}
+  .auth-title{font-family:var(--font-head);font-size:22px;font-weight:800;margin:4px 0 8px;color:#fff;}
+  .auth-sub{color:var(--ink-soft);font-size:14.5px;margin:0 0 22px;line-height:1.6;}
+  .auth-google{width:100%;background:#fff;color:#1f2433;box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.6);}
+  .auth-google:hover{filter:brightness(.97);}
+  .auth-google svg{width:20px;height:20px;flex:none;}
+  .auth-note{margin:16px 0 0;font-size:12.5px;color:var(--ink-muted);line-height:1.55;}
+  .user-bar{position:fixed;top:14px;right:14px;z-index:60;display:none;align-items:center;gap:10px;
+    background:var(--glass);border:1px solid var(--glass-border);border-radius:999px;padding:7px 8px 7px 14px;
+    -webkit-backdrop-filter:blur(var(--blur)) saturate(150%);backdrop-filter:blur(var(--blur)) saturate(150%);box-shadow:0 10px 26px rgba(0,0,0,.4);}
+  .user-bar .user-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px rgba(167,139,250,.7);flex:none;}
+  .user-bar .user-email{font-size:13px;color:var(--ink-soft);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .user-bar .user-logout{font-family:var(--font-head);font-size:12.5px;font-weight:600;color:#fff;background:var(--grad);border:0;border-radius:999px;padding:7px 13px;min-height:32px;}
+  .user-bar .user-logout:hover{filter:brightness(1.08);} .user-bar .user-logout:active{transform:scale(.96);}
+
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   @keyframes spin{to{transform:rotate(360deg)}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
   @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;} html{scroll-behavior:auto;} }
   :focus-visible{outline:3px solid var(--ring);outline-offset:3px;border-radius:8px;}
-  @media (max-width:560px){ .wrap{padding:28px 14px 46px;} .support-vi,.subcard{margin-left:0;} .go.auto{width:100%;} }
+  @media (max-width:560px){ .wrap{padding:28px 14px 46px;} .support-vi,.subcard{margin-left:0;} .go.auto{width:100%;} .user-bar .user-email{max-width:108px;} }
 </style>
 </head>
 <body>
   <div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+
+  <!-- MÀN ĐĂNG NHẬP (Giai đoạn 1): che toàn bộ app cho tới khi đăng nhập đúng tài khoản trong danh sách -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card glass">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
+        <span class="name">IELTS Writing Hub</span>
+      </div>
+      <h2 class="auth-title">Đăng nhập để bắt đầu</h2>
+      <p class="auth-sub" id="authMsg">Công cụ dành cho học viên đã đăng ký. Đăng nhập bằng Google để vào học nhé.</p>
+      <button class="go full auth-google" onclick="signInGoogle()">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+        <span>Đăng nhập bằng Google</span>
+      </button>
+      <p class="auth-note">Chưa có quyền truy cập? Liên hệ admin (Zalo/Facebook ở cuối trang) để được thêm vào danh sách học viên nhé.</p>
+    </div>
+  </div>
+
+  <!-- Thanh người dùng: hiện sau khi đăng nhập -->
+  <div id="userBar" class="user-bar">
+    <span class="user-dot" aria-hidden="true"></span>
+    <span id="userEmail" class="user-email"></span>
+    <button class="user-logout" onclick="signOutUser()">Đăng xuất</button>
+  </div>
 
   <div class="wrap">
     <header>
@@ -264,8 +312,59 @@
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const FN={ideas:"/.netlify/functions/generate-ideas",exam:"/.netlify/functions/exam-questions",para:"/.netlify/functions/paraphrase",score:"/.netlify/functions/score"};
+
+/* ===== ĐĂNG NHẬP (Supabase) — Giai đoạn 1: chỉ người trong danh sách mới dùng được =====
+   Điền 2 giá trị dưới đây SAU KHI tạo project Supabase. Cả hai đều là khoá CÔNG KHAI,
+   để trong file này hoàn toàn an toàn (khác với ANTHROPIC_API_KEY — key đó nằm ở Netlify). */
+const SUPABASE_URL = "https://xnybassnkbjrfhltllmk.supabase.co";              // Project URL (công khai, an toàn)
+const SUPABASE_ANON_KEY = "sb_publishable_feonQXc8fCjYKRulpXG0Qg_aGYox7f8";  // publishable key (công khai, an toàn)
+
+const SB = (window.supabase
+  && /^https:\/\/.+\.supabase\.co\/?$/.test(SUPABASE_URL)
+  && SUPABASE_URL.indexOf("YOUR-PROJECT") < 0
+  && SUPABASE_ANON_KEY.indexOf("YOUR-ANON-KEY") < 0)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+function showApp(email){
+  const gate=document.getElementById("authScreen"); if(gate) gate.style.display="none";
+  const bar=document.getElementById("userBar"); if(bar){ bar.style.display="flex"; }
+  const e=document.getElementById("userEmail"); if(e) e.textContent=email||"";
+}
+function showAuth(msg){
+  const gate=document.getElementById("authScreen"); if(gate) gate.style.display="flex";
+  const bar=document.getElementById("userBar"); if(bar) bar.style.display="none";
+  if(msg){ const m=document.getElementById("authMsg"); if(m) m.textContent=msg; }
+}
+async function getToken(){
+  if(!SB) return "";
+  try{ const { data:{ session } } = await SB.auth.getSession(); return (session && session.access_token) ? session.access_token : ""; }
+  catch(e){ return ""; }
+}
+async function authHeaders(){
+  const h={"Content-Type":"application/json"};
+  const t=await getToken(); if(t) h["Authorization"]="Bearer "+t;
+  return h;
+}
+async function signInGoogle(){
+  if(!SB){ showAuth("Chưa cấu hình đăng nhập. Cần điền SUPABASE_URL & SUPABASE_ANON_KEY trong index.html (xem file hướng dẫn)."); return; }
+  try{ await SB.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: window.location.origin } }); }
+  catch(e){ showAuth("Không mở được đăng nhập Google: "+(e.message||e)); }
+}
+async function signOutUser(){ try{ if(SB) await SB.auth.signOut(); }catch(e){} showAuth(); }
+
+(async function initAuth(){
+  if(!SB){ showAuth("Chưa bật đăng nhập. Bạn (admin) làm theo file HƯỚNG DẪN để cấu hình Supabase + Google nhé."); return; }
+  SB.auth.onAuthStateChange((_evt, session)=>{ (session && session.user) ? showApp(session.user.email) : showAuth(); });
+  try{
+    const { data:{ session } } = await SB.auth.getSession();
+    (session && session.user) ? showApp(session.user.email) : showAuth();
+  }catch(e){ showAuth(); }
+})();
+
 function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 const prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const G = () => (window.gsap && !prefersReduce);
@@ -315,8 +414,8 @@ async function streamTool(url, payload, outBox, mdEl, btn){
   mdEl.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang đọc thật kỹ, chữ sẽ hiện dần cho cậu nha…</div>';
   btn.disabled=true; btn.classList.add("loading");
   try{
-    const resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    const resp=await fetch(url,{method:"POST",headers:await authHeaders(),body:JSON.stringify(payload)});
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
     const reader=resp.body.getReader();const decoder=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=decoder.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(full);}
     if(!full.trim()) mdEl.innerHTML="<p>Không có nội dung trả về. Bạn thử lại nhé.</p>";
@@ -340,8 +439,8 @@ async function generate(){
   if(!topic){errText.textContent="Cậu nhập một chủ đề trước đã nha.";errEl.className="error glass show";return;}
   btn.disabled=true;btn.classList.add("loading");statusEl.className="show";startLoadingMsgs();
   try{
-    const resp=await fetch(FN.ideas,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic})});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    const resp=await fetch(FN.ideas,{method:"POST",headers:await authHeaders(),body:JSON.stringify({topic})});
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
     const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
     let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
@@ -462,8 +561,8 @@ async function runParaphrase(){
 const DONE_MARK="[[[DONE]]]";
 function stripDone(s){ return s.split(DONE_MARK).join(""); }
 async function streamPart(url, payload, mdEl, prefix){
-  const resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+  const resp=await fetch(url,{method:"POST",headers:await authHeaders(),body:JSON.stringify(payload)});
+  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
   const reader=resp.body.getReader(),dec=new TextDecoder();let cur="";
   try{
     while(true){const {done,value}=await reader.read();if(done)break;cur+=dec.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(prefix+stripDone(cur));}
