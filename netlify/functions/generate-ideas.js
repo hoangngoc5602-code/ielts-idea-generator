@@ -1,15 +1,15 @@
 // ============================================================
 //  Công cụ TÌM Ý TƯỞNG (IELTS Writing Task 2) — song ngữ.
 //  Netlify Functions 2.0 + STREAMING. MỘT lần gọi -> JSON ý tưởng theo NHÓM (1 hoặc 2 hướng).
-//  API key đọc từ biến môi trường ANTHROPIC_API_KEY.
+//  PHẦN 2: kiểm gói/quota (mỗi lần dùng = 1 lượt 'ideas') + ghi chi phí thật (Haiku).
 // ============================================================
 
-import { requireAllowedUser } from "./authlib.js";
+import { getUserEmail, isAllowlisted, useQuota, addCost, costMicroFromUsage, deny, quotaMessage } from "./authlib.js";
 
-// Haiku: nhanh ~3 lần Sonnet -> MỘT lần gọi là xong gọn trong ~26s, KHÔNG cần chia lượt,
-// không bị cắt. Đầu ra ý tưởng vốn có giới hạn (3-6 ý) nên Haiku chạy ổn định.
-// Chất lượng được siết bằng prompt chi tiết + VÍ DỤ MẪU + bước TỰ KIỂM bên dưới.
 const MODEL = "claude-haiku-4-5-20251001";
+// Giá Haiku 4.5 (micro-USD / token = USD / triệu token): in $1, cache write $1.25, cache read $0.10, out $5.
+const RATES = { in: 1, cacheWrite: 1.25, cacheRead: 0.10, out: 5 };
+const FEATURE = "ideas";
 
 const SYSTEM_PROMPT = `Bạn là huấn luyện viên IELTS Writing Task 2 cho người Việt, nhắm Band 8.0+.
 Người học nhập một CHỦ ĐỀ (tiếng Việt hoặc tiếng Anh). Hãy brainstorm ý tưởng song ngữ CHẤT LƯỢNG CAO.
@@ -81,9 +81,18 @@ CHỈ trả về JSON THUẦN (không markdown, không code fence, không lời 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
-  // CỔNG: chỉ người đã đăng nhập & nằm trong danh sách cho phép mới được dùng (chặn TRƯỚC khi tốn API).
-  const gate = await requireAllowedUser(req);
-  if (!gate.ok) return gate.response;
+  // --- CỔNG: xác thực + gói/quota ---
+  const u = await getUserEmail(req);
+  if (u.error) return u.error;
+  const email = u.email;
+
+  const allow = await isAllowlisted(email);              // allowlist = dùng free KHÔNG giới hạn
+  if (!allow) {
+    const c = await useQuota(email, FEATURE, false);     // chỉ KIỂM trước khi gọi AI
+    if (c.reason === "config")
+      return deny(500, "Hệ thống gói chưa cấu hình (thiếu SUPABASE_SERVICE_ROLE_KEY trên Netlify).");
+    if (!c.allowed) return deny(402, quotaMessage(FEATURE, c));
+  }
 
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
@@ -114,18 +123,21 @@ export default async (req) => {
     return new Response(msg + (detail ? " " + detail.slice(0, 300) : ""), { status: 502 });
   }
 
-  return new Response(streamAnthropicText(upstream.body), {
+  // Việc TRỪ lượt được dời vào trong stream, CHỈ thực hiện khi AI đã trả được nội dung
+  // (xem streamAnthropicText) -> gọi AI lỗi/không trả gì thì học viên KHÔNG bị trừ lượt.
+  return new Response(streamAnthropicText(upstream.body, { email, consume: !allow }), {
     headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" },
   });
 };
 
-function streamAnthropicText(upstreamBody) {
+function streamAnthropicText(upstreamBody, ctx) {
   return new ReadableStream({
     async start(controller) {
       const reader = upstreamBody.getReader();
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
       let buffer = "";
+      let usage = null, outTokens = 0;
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -142,6 +154,10 @@ function streamAnthropicText(upstreamBody) {
               const evt = JSON.parse(data);
               if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") {
                 controller.enqueue(encoder.encode(evt.delta.text));
+              } else if (evt.type === "message_start" && evt.message && evt.message.usage) {
+                usage = Object.assign({}, evt.message.usage);
+              } else if (evt.type === "message_delta" && evt.usage && typeof evt.usage.output_tokens === "number") {
+                outTokens = evt.usage.output_tokens;
               }
             } catch (e) { /* skip */ }
           }
@@ -149,6 +165,16 @@ function streamAnthropicText(upstreamBody) {
       } catch (e) {
         controller.enqueue(new TextEncoder().encode(" "));
       } finally {
+        try {
+          // CHỈ trừ lượt khi AI đã thực sự trả nội dung (outTokens > 0). Gọi lỗi/không trả gì -> KHÔNG trừ.
+          if (ctx && ctx.consume && outTokens > 0) await useQuota(ctx.email, FEATURE, true);
+        } catch (e) { /* bỏ qua */ }
+        try {
+          if (ctx && ctx.email && usage) {
+            usage.output_tokens = outTokens || usage.output_tokens || 0;
+            await addCost(ctx.email, FEATURE, costMicroFromUsage(usage, RATES));
+          }
+        } catch (e) { /* bỏ qua */ }
         controller.close();
       }
     },

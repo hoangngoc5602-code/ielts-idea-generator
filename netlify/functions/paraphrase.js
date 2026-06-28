@@ -1,15 +1,15 @@
 // ============================================================
 //  Công cụ PARAPHRASE / NÂNG CẤP CÂU (IELTS Writing Task 2).
-//  Netlify Functions 2.0 + STREAMING.
-//  Nhận: câu của học viên + đề bài (bối cảnh) + band mong muốn
-//  -> viết lại đúng band đó + giải thích theo 4 tiêu chí.
+//  Netlify Functions 2.0 + STREAMING. 2 LƯỢT ngắn + tự nối tiếp.
+//  PHẦN 2: kiểm gói/quota (1 lần dùng = 1 lượt 'para', chỉ trừ ở lượt MỞ ĐẦU) + ghi cost thật (Sonnet).
 // ============================================================
 
-import { requireAllowedUser } from "./authlib.js";
+import { getUserEmail, isAllowlisted, useQuota, addCost, costMicroFromUsage, deny, quotaMessage } from "./authlib.js";
 
-// Sonnet cho chất lượng cao. Chia 2 LƯỢT NGẮN (frontend gọi 2 lần: lượt 1 = bản viết lại + TR + CC;
-// lượt 2 = LR + GRA) để mỗi lượt xong gọn trong ~26s của Netlify -> không bị cắt giữa chừng.
 const MODEL = "claude-sonnet-4-6";
+// Giá Sonnet 4.6 (micro-USD / token): in $3, cache write $3.75, cache read $0.30, out $15.
+const RATES = { in: 3, cacheWrite: 3.75, cacheRead: 0.30, out: 15 };
+const FEATURE = "para";
 
 const SYSTEM_PROMPT = `Bạn là chuyên gia luyện IELTS Writing Task 2 cho học viên người Việt.
 Học viên gửi một (vài) câu họ tự viết, kèm ĐỀ BÀI để bạn hiểu bối cảnh, và BAND MỤC TIÊU họ muốn.
@@ -52,9 +52,10 @@ XUẤT THEO TỪNG LƯỢT: chỉ xuất ĐÚNG các mục được liệt kê t
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
-  // CỔNG: chỉ người đã đăng nhập & nằm trong danh sách cho phép mới được dùng (chặn TRƯỚC khi tốn API).
-  const gate = await requireAllowedUser(req);
-  if (!gate.ok) return gate.response;
+  // --- CỔNG (1): xác thực ---
+  const u = await getUserEmail(req);
+  if (u.error) return u.error;
+  const email = u.email;
 
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return new Response("Chưa cấu hình ANTHROPIC_API_KEY trên Netlify.", { status: 500 });
@@ -67,16 +68,28 @@ export default async (req) => {
     targetBand = (body.targetBand || "").toString().trim();
     part = parseInt(body.part, 10) || 1;
     prev = (body.prev || "").toString().slice(0, 6000);
-    cont = body.cont === true || body.cont === "true";   // lượt VIẾT TIẾP phần đang dở
+    cont = body.cont === true || body.cont === "true";
     partial = (body.partial || "").toString().slice(0, 6000);
   } catch (e) {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
+
+  // 1 lần nâng cấp = nhiều lượt gọi; chỉ TRỪ quota ở lượt MỞ ĐẦU (part 1, không phải nối tiếp).
+  const isStart = (part === 1 && !cont);
+
+  // --- CỔNG (2): gói/quota (bỏ qua nếu allowlisted) ---
+  const allow = await isAllowlisted(email);
+  if (!allow && isStart) {
+    const c = await useQuota(email, FEATURE, false);
+    if (c.reason === "config")
+      return deny(500, "Hệ thống gói chưa cấu hình (thiếu SUPABASE_SERVICE_ROLE_KEY trên Netlify).");
+    if (!c.allowed) return deny(402, quotaMessage(FEATURE, c));
+  }
+
   if (!text) return new Response("Vui lòng nhập câu/đoạn bạn muốn nâng cấp.", { status: 400 });
   if (!targetBand) return new Response("Vui lòng chọn band điểm mong muốn.", { status: 400 });
   if (text.length > 4000) return new Response("Đoạn văn quá dài (tối đa ~4000 ký tự).", { status: 400 });
 
-  // 2 LƯỢT NGẮN để không chạm giới hạn ~26s (Sonnet chậm hơn Haiku ~3 lần).
   const SECTIONS = {
     1: "LƯỢT 1/2 — CHỈ xuất các mục sau:\n" +
        "## Bản viết lại (mục tiêu Band " + targetBand + ")\n" +
@@ -91,14 +104,12 @@ export default async (req) => {
        "(mỗi tiêu chí 2-3 gạch đầu dòng; trích {{s:...}} gốc / {{n:...}} mới làm dẫn chứng)",
   };
 
-  // KHỐI CỐ ĐỊNH trong MỘT lần nâng cấp (đề + band + câu HV) -> đánh dấu CACHE: lượt 2 đọc lại từ cache,
-  // KHÔNG tính vào giới hạn token/phút (ITPM) và chỉ tốn ~10% phí.
+  // Khối CỐ ĐỊNH (đề + band + câu HV) -> cache: lượt 2 đọc lại từ cache (rẻ + không tính rate limit).
   const fixedBlock =
     "ĐỀ BÀI (bối cảnh):\n" + (prompt || "(học viên không cung cấp đề — hãy suy luận bối cảnh hợp lý)") + "\n\n" +
     "BAND MỤC TIÊU: " + targetBand + "\n\n" +
     "CÂU/ĐOẠN CỦA HỌC VIÊN:\n" + text;
 
-  // KHỐI THAY ĐỔI theo lượt (nhẹ): phần đã xuất (chỉ BẢN VIẾT LẠI) + yêu cầu của lượt.
   const varBlock = cont
     ? ((prev ? ("BẢN VIẾT LẠI ĐÃ TẠO (bám đúng, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
        "MỤC ĐANG VIẾT bị NGẮT giữa chừng. Phần ĐÃ VIẾT của mục này:\n" + partial + "\n\n" +
@@ -109,17 +120,11 @@ export default async (req) => {
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: {
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
+    headers: { "x-api-key": API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 1400,
       stream: true,
-      // Cache 2 LỚP: (1) hướng dẫn ở system; (2) đề+band+câu HV ở tin nhắn. Lượt 2 đọc từ cache
-      // -> rẻ hơn ~10x và KHÔNG tính vào rate limit token/phút. Tự bỏ qua an toàn nếu API chưa bật cache.
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: [
         { type: "text", text: fixedBlock, cache_control: { type: "ephemeral" } },
@@ -136,12 +141,14 @@ export default async (req) => {
     return new Response(msg + (detail ? " " + detail.slice(0, 300) : ""), { status: 502 });
   }
 
-  return new Response(streamAnthropicText(upstream.body), {
+  // Việc TRỪ lượt được dời vào trong stream, CHỈ thực hiện khi AI đã trả được nội dung
+  // (xem streamAnthropicText) -> gọi AI lỗi/không trả gì thì học viên KHÔNG bị trừ lượt.
+  return new Response(streamAnthropicText(upstream.body, { email, consume: (!allow && isStart) }), {
     headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" },
   });
 };
 
-function streamAnthropicText(upstreamBody) {
+function streamAnthropicText(upstreamBody, ctx) {
   return new ReadableStream({
     async start(controller) {
       const reader = upstreamBody.getReader();
@@ -149,6 +156,7 @@ function streamAnthropicText(upstreamBody) {
       const encoder = new TextEncoder();
       let buffer = "";
       let stopReason = "";
+      let usage = null, outTokens = 0;
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -165,17 +173,29 @@ function streamAnthropicText(upstreamBody) {
               const evt = JSON.parse(data);
               if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") {
                 controller.enqueue(encoder.encode(evt.delta.text));
-              } else if (evt.type === "message_delta" && evt.delta && evt.delta.stop_reason) {
-                stopReason = evt.delta.stop_reason;
+              } else if (evt.type === "message_start" && evt.message && evt.message.usage) {
+                usage = Object.assign({}, evt.message.usage);
+              } else if (evt.type === "message_delta") {
+                if (evt.delta && evt.delta.stop_reason) stopReason = evt.delta.stop_reason;
+                if (evt.usage && typeof evt.usage.output_tokens === "number") outTokens = evt.usage.output_tokens;
               }
             } catch (e) { /* skip */ }
           }
         }
-        // Báo cho frontend: viết XONG (end_turn) hay bị cắt. Sentinel sẽ được frontend bóc bỏ.
         if (stopReason === "end_turn") controller.enqueue(encoder.encode("[[[DONE]]]"));
       } catch (e) {
         controller.enqueue(new TextEncoder().encode("\n\n[Lỗi truyền dữ liệu: " + (e.message || e) + "]"));
       } finally {
+        try {
+          // CHỈ trừ lượt khi AI đã thực sự trả nội dung (outTokens > 0). Gọi lỗi/không trả gì -> KHÔNG trừ.
+          if (ctx && ctx.consume && outTokens > 0) await useQuota(ctx.email, FEATURE, true);
+        } catch (e) { /* bỏ qua */ }
+        try {
+          if (ctx && ctx.email && usage) {
+            usage.output_tokens = outTokens || usage.output_tokens || 0;
+            await addCost(ctx.email, FEATURE, costMicroFromUsage(usage, RATES));
+          }
+        } catch (e) { /* bỏ qua */ }
         controller.close();
       }
     },

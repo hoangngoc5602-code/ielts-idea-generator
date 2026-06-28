@@ -195,6 +195,33 @@
   .user-bar .user-email{font-size:13px;color:var(--ink-soft);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .user-bar .user-logout{font-family:var(--font-head);font-size:12.5px;font-weight:600;color:#fff;background:var(--grad);border:0;border-radius:999px;padding:7px 13px;min-height:32px;}
   .user-bar .user-logout:hover{filter:brightness(1.08);} .user-bar .user-logout:active{transform:scale(.96);}
+  /* ===== PHẦN 2: gói / banner gia hạn / modal thanh toán ===== */
+  .user-plan{font-family:var(--font-head);font-size:12px;font-weight:700;color:#C7CBFF;background:rgba(99,102,241,.18);border:1px solid rgba(129,140,248,.32);border-radius:999px;padding:4px 10px;}
+  .user-plan-btn{font-family:var(--font-head);font-size:12.5px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--glass-border);border-radius:999px;padding:7px 12px;min-height:32px;cursor:pointer;}
+  .user-plan-btn:hover{background:rgba(255,255,255,.16);border-color:var(--ring);}
+  .renew-banner{display:none;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:0 0 18px;border-radius:14px;padding:11px 16px;background:var(--grad);color:#fff;font-weight:600;font-size:13.5px;text-align:center;box-shadow:0 10px 24px rgba(99,102,241,.4);}
+  .renew-banner.show{display:flex;}
+  .renew-banner button{font-family:var(--font-head);font-weight:700;font-size:12.5px;color:#4F46E5;background:#fff;border:0;border-radius:999px;padding:7px 14px;min-height:32px;cursor:pointer;}
+  .modal-ov{position:fixed;inset:0;z-index:1100;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow:auto;background:rgba(8,11,20,.74);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+  .modal-ov.show{display:flex;}
+  .modal{max-width:760px;width:100%;padding:26px 24px;position:relative;}
+  .modal .x{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,.06);color:var(--ink);font-size:18px;line-height:1;cursor:pointer;}
+  .modal .x:hover{background:rgba(255,255,255,.14);}
+  .modal h2{font-family:var(--font-head);font-size:21px;font-weight:800;margin:0 0 4px;color:#fff;}
+  .modal .sub{color:var(--ink-soft);font-size:14px;margin:0 0 20px;}
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media (max-width:640px){ .plans{grid-template-columns:1fr;} }
+  .plan-card{border-radius:var(--radius-sm);padding:18px 16px;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);display:flex;flex-direction:column;}
+  .plan-card.feat{border-color:var(--ring);box-shadow:inset 0 0 0 1px var(--ring);}
+  .plan-card .pname{font-family:var(--font-head);font-weight:700;font-size:16px;color:#fff;}
+  .plan-card .price{font-family:var(--font-head);font-weight:800;font-size:22px;color:#fff;margin:6px 0 2px;}
+  .plan-card .price small{font-size:12.5px;color:var(--ink-soft);font-weight:500;}
+  .plan-card ul{list-style:none;margin:12px 0 16px;padding:0;}
+  .plan-card li{font-size:13px;color:#DCE0EE;padding:5px 0 5px 20px;position:relative;line-height:1.45;}
+  .plan-card li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .plan-card .go{width:100%;min-height:46px;font-size:14.5px;margin-top:auto;}
+  .plan-card .cur{text-align:center;font-size:12.5px;color:var(--accent);font-weight:600;margin-top:auto;padding:10px 0 0;}
+  .pay-note{margin-top:16px;font-size:13px;color:var(--ink-soft);line-height:1.6;text-align:center;}
 
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -239,10 +266,13 @@
   <div id="userBar" class="user-bar">
     <span class="user-dot" aria-hidden="true"></span>
     <span id="userEmail" class="user-email"></span>
+    <span id="userPlan" class="user-plan"></span>
+    <button class="user-plan-btn" onclick="openPlans()">Gói</button>
     <button class="user-logout" onclick="signOutUser()">Đăng xuất</button>
   </div>
 
   <div class="wrap">
+    <div id="renewBanner" class="renew-banner"><span id="renewText"></span> <button onclick="openPlans()">Gia hạn ngay</button></div>
     <header>
       <div class="brand glass">
         <span class="mark" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
@@ -329,10 +359,40 @@
     </section>
   </div>
 
+  <!-- MODAL CHỌN GÓI (Phần 2) -->
+  <div id="plansModal" class="modal-ov">
+    <div class="modal glass">
+      <button class="x" onclick="closePlans()" aria-label="Đóng">×</button>
+      <h2>Chọn gói</h2>
+      <p class="sub">Nâng cấp để dùng nhiều hơn. Thanh toán bằng quét VietQR (chuyển khoản ngân hàng).</p>
+      <div class="plans">
+        <div class="plan-card">
+          <div class="pname">Free</div>
+          <div class="price">0đ</div>
+          <ul><li>Tìm ý tưởng: ~10 lần/ngày</li><li>Đề thi thật: không giới hạn</li><li>Paraphrase: 5 lượt dùng thử</li><li>Chấm điểm: 5 lượt dùng thử</li></ul>
+          <div class="cur" id="curFree" style="display:none">Gói hiện tại</div>
+        </div>
+        <div class="plan-card feat">
+          <div class="pname">Standard ⭐</div>
+          <div class="price">99.000đ<small> /tháng</small></div>
+          <ul><li>Tìm ý tưởng: không giới hạn</li><li>Đề thi thật: không giới hạn</li><li>Paraphrase: 30 lượt/tháng</li><li>Chấm điểm: 20 bài/tháng</li></ul>
+          <button class="go" onclick="buyPlan('standard',this)">Mua Standard</button>
+        </div>
+        <div class="plan-card">
+          <div class="pname">Pro</div>
+          <div class="price">199.000đ<small> /tháng</small></div>
+          <ul><li>Tìm ý tưởng: không giới hạn</li><li>Đề thi thật: không giới hạn</li><li>Paraphrase: 80 lượt/tháng</li><li>Chấm điểm: 45 bài/tháng</li></ul>
+          <button class="go" onclick="buyPlan('pro',this)">Mua Pro</button>
+        </div>
+      </div>
+      <p class="pay-note" id="payNote"></p>
+    </div>
+  </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const FN={ideas:"/.netlify/functions/generate-ideas",exam:"/.netlify/functions/exam-questions",para:"/.netlify/functions/paraphrase",score:"/.netlify/functions/score"};
+const FN={ideas:"/.netlify/functions/generate-ideas",exam:"/.netlify/functions/exam-questions",para:"/.netlify/functions/paraphrase",score:"/.netlify/functions/score",me:"/.netlify/functions/me",pay:"/.netlify/functions/payos-create"};
 
 /* ===== ĐĂNG NHẬP (Supabase) — Giai đoạn 1: chỉ người trong danh sách mới dùng được =====
    Điền 2 giá trị dưới đây SAU KHI tạo project Supabase. Cả hai đều là khoá CÔNG KHAI,
@@ -351,6 +411,7 @@ function showApp(email){
   const gate=document.getElementById("authScreen"); if(gate) gate.style.display="none";
   const bar=document.getElementById("userBar"); if(bar){ bar.style.display="flex"; }
   const e=document.getElementById("userEmail"); if(e) e.textContent=email||"";
+  fetchStatus(); handlePayParams();
 }
 function showAuth(msg){
   const gate=document.getElementById("authScreen"); if(gate) gate.style.display="flex";
@@ -382,6 +443,61 @@ async function signOutUser(){ try{ if(SB) await SB.auth.signOut(); }catch(e){} s
     (session && session.user) ? showApp(session.user.email) : showAuth();
   }catch(e){ showAuth(); }
 })();
+
+/* ===== PHẦN 2: gói / thanh toán / nhắc gia hạn ===== */
+let MYSTATUS=null;
+function planLabel(p){ return p==="unlimited"?"Không giới hạn":p==="pro"?"Pro":p==="standard"?"Standard":"Free"; }
+async function fetchStatus(){
+  try{
+    const r=await fetch(FN.me,{headers:await authHeaders()});
+    if(!r.ok) return;
+    MYSTATUS=await r.json(); renderStatus();
+  }catch(e){}
+}
+function renderStatus(){
+  if(!MYSTATUS) return;
+  const el=document.getElementById("userPlan"); if(el) el.textContent=planLabel(MYSTATUS.plan);
+  const b=document.getElementById("renewBanner"), t=document.getElementById("renewText");
+  if(b&&t&&MYSTATUS.expires_at&&(MYSTATUS.plan==="standard"||MYSTATUS.plan==="pro")){
+    const days=Math.ceil((new Date(MYSTATUS.expires_at)-new Date())/86400000);
+    if(days<=3){ t.textContent="Gói "+planLabel(MYSTATUS.plan)+" của bạn còn "+(days>0?days+" ngày":"chưa tới 1 ngày")+". Gia hạn để không bị gián đoạn nhé!"; b.classList.add("show"); }
+    else b.classList.remove("show");
+  } else if(b){ b.classList.remove("show"); }
+}
+function openPlans(){
+  const m=document.getElementById("plansModal"); if(m) m.classList.add("show");
+  const cur=MYSTATUS&&MYSTATUS.plan;
+  const note=document.getElementById("payNote");
+  if(note) note.textContent = (cur&&cur!=="free"&&cur!=="unlimited") ? ("Gói hiện tại: "+planLabel(cur)+". Mua/gia hạn sẽ cộng thêm 30 ngày vào hạn hiện có.") : "";
+  const cf=document.getElementById("curFree"); if(cf) cf.style.display=(cur==="free")?"block":"none";
+}
+function closePlans(){ const m=document.getElementById("plansModal"); if(m) m.classList.remove("show"); }
+async function buyPlan(plan, btn){
+  const orig=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent="Đang tạo mã thanh toán…"; }
+  try{
+    const r=await fetch(FN.pay,{method:"POST",headers:await authHeaders(),body:JSON.stringify({plan})});
+    const t=await r.text(); let j={}; try{ j=JSON.parse(t); }catch(e){}
+    if(!r.ok||!j.ok||!j.checkoutUrl){ alert((j&&j.error)||t||"Không tạo được thanh toán. Thử lại nhé."); if(btn){btn.disabled=false;btn.textContent=orig;} return; }
+    window.location.href=j.checkoutUrl;
+  }catch(e){ alert("Lỗi kết nối, thử lại nhé."); if(btn){btn.disabled=false;btn.textContent=orig;} }
+}
+function handlePayParams(){
+  const p=new URLSearchParams(location.search).get("pay");
+  if(!p) return;
+  history.replaceState(null,"",location.pathname);
+  if(p==="cancel") return;
+  if(p==="return"){
+    openPlans();
+    const note=document.getElementById("payNote");
+    if(note) note.textContent="Đang xác nhận thanh toán… (gói sẽ tự kích hoạt trong vài giây)";
+    let n=0; const iv=setInterval(async()=>{
+      n++; await fetchStatus(); const pl=MYSTATUS&&MYSTATUS.plan;
+      if(pl==="standard"||pl==="pro"){ clearInterval(iv); if(note) note.textContent="Kích hoạt thành công! Gói của bạn: "+planLabel(pl)+" 🎉"; }
+      else if(n>=12){ clearInterval(iv); if(note) note.textContent="Nếu bạn đã chuyển khoản, gói sẽ kích hoạt trong giây lát — tải lại trang sau ít phút nhé. Cần hỗ trợ thì nhắn Zalo/Facebook ở màn đăng nhập."; }
+    },3000);
+  }
+}
 
 function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 const prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -433,7 +549,7 @@ async function streamTool(url, payload, outBox, mdEl, btn){
   btn.disabled=true; btn.classList.add("loading");
   try{
     const resp=await fetch(url,{method:"POST",headers:await authHeaders(),body:JSON.stringify(payload)});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");if(resp.status===402)openPlans();throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
     const reader=resp.body.getReader();const decoder=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=decoder.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(full);}
     if(!full.trim()) mdEl.innerHTML="<p>Không có nội dung trả về. Bạn thử lại nhé.</p>";
@@ -458,7 +574,7 @@ async function generate(){
   btn.disabled=true;btn.classList.add("loading");statusEl.className="show";startLoadingMsgs();
   try{
     const resp=await fetch(FN.ideas,{method:"POST",headers:await authHeaders(),body:JSON.stringify({topic})});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");if(resp.status===402)openPlans();throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
     const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
     let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
@@ -608,7 +724,7 @@ const DONE_MARK="[[[DONE]]]";
 function stripDone(s){ return s.split(DONE_MARK).join(""); }
 async function streamPart(url, payload, mdEl, prefix){
   const resp=await fetch(url,{method:"POST",headers:await authHeaders(),body:JSON.stringify(payload)});
-  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");if(resp.status===402)openPlans();throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
   const reader=resp.body.getReader(),dec=new TextDecoder();let cur="";
   try{
     while(true){const {done,value}=await reader.read();if(done)break;cur+=dec.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(prefix+stripDone(cur));}
