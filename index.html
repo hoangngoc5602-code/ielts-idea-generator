@@ -179,7 +179,15 @@
   .auth-google{width:100%;background:#fff;color:#1f2433;box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.6);}
   .auth-google:hover{filter:brightness(.97);}
   .auth-google svg{width:20px;height:20px;flex:none;}
-  .auth-note{margin:16px 0 0;font-size:12.5px;color:var(--ink-muted);line-height:1.55;}
+  .auth-note{margin:18px 0 0;font-size:12.5px;color:var(--ink-muted);line-height:1.55;}
+  .auth-contact{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px;}
+  .auth-clink{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);border-radius:12px;padding:8px 13px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);transition:transform .14s,background .25s,border-color .25s;}
+  .auth-clink:hover{transform:translateY(-1px);background:rgba(255,255,255,.1);border-color:var(--ring);}
+  .auth-clink .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none;background:var(--grad);}
+  .auth-clink .ic svg{width:16px;height:16px;}
+  .auth-clink .meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;}
+  .auth-clink .meta .t{font-family:var(--font-head);font-weight:700;font-size:13px;}
+  .auth-clink .meta .s{font-size:11.5px;color:var(--ink-soft);}
   .user-bar{position:fixed;top:14px;right:14px;z-index:60;display:none;align-items:center;gap:10px;
     background:var(--glass);border:1px solid var(--glass-border);border-radius:999px;padding:7px 8px 7px 14px;
     -webkit-backdrop-filter:blur(var(--blur)) saturate(150%);backdrop-filter:blur(var(--blur)) saturate(150%);box-shadow:0 10px 26px rgba(0,0,0,.4);}
@@ -213,7 +221,17 @@
         <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
         <span>Đăng nhập bằng Google</span>
       </button>
-      <p class="auth-note">Chưa có quyền truy cập? Liên hệ admin (Zalo/Facebook ở cuối trang) để được thêm vào danh sách học viên nhé.</p>
+      <p class="auth-note">Chưa có quyền truy cập, hoặc cần hỗ trợ? Nhắn mình để được thêm vào lớp nhé:</p>
+      <div class="auth-contact">
+        <a class="auth-clink" href="https://zalo.me/0384891173" target="_blank" rel="noopener" aria-label="Liên hệ Zalo 0384 891 173">
+          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg></span>
+          <span class="meta"><span class="t">Zalo</span><span class="s">0384 891 173</span></span>
+        </a>
+        <a class="auth-clink" href="https://web.facebook.com/ngoc.hoang.961112" target="_blank" rel="noopener" aria-label="Facebook">
+          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>
+          <span class="meta"><span class="t">Facebook</span><span class="s">ngoc.hoang.961112</span></span>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -523,6 +541,29 @@ document.getElementById("examList").addEventListener("click",e=>{
   else if(b.dataset.act==="score"){setTab("score");document.getElementById("scorePrompt").value=it.question;document.getElementById("scoreEssay").focus();}
 });
 
+/* Dọn output 1 lượt paraphrase: lượt 1 giữ "## Bản viết lại" + TR + CC (cắt nếu lấn sang LR/GRA);
+   lượt 2 giữ LR + GRA (bỏ phần lỡ nhắc lại bản viết lại). Chống lỗi chạy lặp lại từ đầu. */
+function cleanParaPart(text, part){
+  const lines=text.split("\n");
+  const isH3=i=>/^###\s/.test(lines[i].trim());
+  const isRW=i=>/^##\s/.test(lines[i].trim()) && lines[i].toLowerCase().includes("bản viết lại");
+  let start=0, end=lines.length, stop=false;
+  if(part===1){
+    let seenRW=false;
+    for(let i=0;i<lines.length;i++){
+      if(isRW(i)){ if(seenRW){ end=i; stop=true; break; } seenRW=true; continue; }
+      if(isH3(i)){ const low=lines[i].toLowerCase();
+        if(low.includes("lexical")||low.includes("grammatical")){ end=i; stop=true; break; } }
+    }
+  }else{
+    let s=-1;
+    for(let i=0;i<lines.length;i++){ if(isH3(i)){ const low=lines[i].toLowerCase();
+      if(low.includes("lexical")||low.includes("grammatical")){ s=i; break; } } }
+    if(s>=0) start=s;
+    for(let i=start+1;i<lines.length;i++){ if(isRW(i)){ end=i; stop=true; break; } }  // lỡ chạy lại từ bản viết lại -> cắt
+  }
+  return { text: lines.slice(start,end).join("\n").replace(/\s+$/,""), stop };
+}
 /* TAB 3: Paraphrase — gọi 2 LƯỢT nối tiếp (giống chấm điểm) để Sonnet không bị cắt */
 async function runParaphrase(){
   const text=document.getElementById("paraText").value.trim(),prompt=document.getElementById("paraPrompt").value.trim(),targetBand=document.getElementById("paraBand").value;
@@ -533,23 +574,28 @@ async function runParaphrase(){
   fadeIn(box);
   md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang viết lại và soi theo từng tiêu chí, chữ sẽ hiện dần nha…</div>';
   btn.disabled=true; btn.classList.add("loading");
-  let acc="";
+  let acc="", rewriteBlock="";
   try{
     for(const p of [1,2]){
       // Mỗi mục: nếu bị cắt thì tự gọi VIẾT TIẾP cho trọn rồi mới sang mục sau.
       let passText="", complete=false, tries=0;
-      while(!complete && tries<6){
+      while(!complete && tries<3){   // cap 3 lượt/mục -> chống chạy lặp & tốn phí
         tries++;
-        const payload={text,prompt,targetBand,part:p}; if(acc) payload.prev=acc;
-        if(passText){ payload.cont=true; payload.partial=passText.slice(-4000); }
+        const payload={text,prompt,targetBand,part:p};
+        if(p>1 && rewriteBlock) payload.prev=rewriteBlock;   // lượt 2 chỉ cần BẢN VIẾT LẠI để trích dẫn, KHÔNG gửi lại TR/CC
+        if(passText){ payload.cont=true; payload.partial=passText.slice(-3000); }
         const before=(acc?acc+"\n\n":"")+passText;
         const r=await streamPart(FN.para, payload, md, before);
-        passText+=r.text; complete=r.complete;
+        passText+=r.text;
+        const cl=cleanParaPart(passText, p);   // bỏ phần lặp + cắt nếu lấn mục khác
+        passText=cl.text; complete=cl.stop||r.complete;
         if(!r.text) break;
       }
       acc=(acc?acc+"\n\n":"")+passText;
+      if(p===1) rewriteBlock=(acc.split(/\n##\s/)[0]||"").trim();   // khối "## Bản viết lại" + bản dịch
     }
     if(!acc.trim()) md.innerHTML="<p>Chưa có nội dung trả về. Bạn thử lại nhé.</p>";
+    else md.innerHTML=renderMarkdown(acc);   // render bản SẠCH cuối cùng (đủ, không lặp)
   }catch(err){
     let msg=err.message||"Đã có lỗi xảy ra.";
     if(/Failed to fetch|NetworkError/i.test(msg)) msg="Không gọi được máy chủ. Nếu bạn mở file trực tiếp thì cần deploy lên Netlify rồi mở qua link Netlify.";
@@ -569,6 +615,28 @@ async function streamPart(url, payload, mdEl, prefix){
   }catch(e){ /* kết nối đứt giữa chừng (vd ~26s) -> coi như lượt bị cắt, sẽ tự nối tiếp */ }
   return { text: stripDone(cur), complete: cur.indexOf(DONE_MARK)>=0 };
 }
+/* Dọn output của MỘT lượt chấm: giữ ĐÚNG tiêu chí của lượt đó, bỏ mọi phần model lỡ lặp lại
+   (vd nhắc lại điểm tổng hay tiêu chí trước) và CẮT nếu nó lấn sang tiêu chí kế.
+   -> chống hẳn lỗi "chạy lại từ đầu", và đảm bảo hiển thị đủ, không lặp. */
+function cleanScorePart(text, part){
+  const lines=text.split("\n");
+  const isH3=i=>/^###\s/.test(lines[i].trim());
+  const KEY={2:"coherence",3:"lexical",4:"grammatical",5:"tổng kết"};   // từ khoá tiêu đề của từng lượt
+  let start=0, end=lines.length, stop=false;
+  if(part>1){
+    const kw=KEY[part]; let s=-1;
+    for(let i=0;i<lines.length;i++){ if(isH3(i)&&lines[i].toLowerCase().includes(kw)){ s=i; break; } }
+    if(s>=0){ start=s; for(let i=s+1;i<lines.length;i++){ if(isH3(i)){ end=i; stop=true; break; } } }
+    // chưa thấy tiêu đề đúng (lượt bị cắt sớm) -> giữ nguyên để vòng nối tiếp xử lý
+  }else{
+    // lượt 1: giữ "## Điểm tổng" + "### Task Response"; cắt khi gặp tiêu chí khác
+    for(let i=0;i<lines.length;i++){
+      if(isH3(i)){ const low=lines[i].toLowerCase();
+        if(low.includes("coherence")||low.includes("lexical")||low.includes("grammatical")||low.includes("tổng kết")){ end=i; stop=true; break; } }
+    }
+  }
+  return { text: lines.slice(start,end).join("\n").replace(/\s+$/,""), stop };
+}
 async function runScore(){
   const essay=document.getElementById("scoreEssay").value.trim(),prompt=document.getElementById("scorePrompt").value.trim();
   const box=document.getElementById("scoreOut"),md=document.getElementById("scoreMd"),btn=document.getElementById("scoreBtn");
@@ -578,23 +646,28 @@ async function runScore(){
   fadeIn(box);
   md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang chấm kỹ theo từng tiêu chí, đợi tớ chút nha…</div>';
   btn.disabled=true; btn.classList.add("loading");
-  let acc="";
+  let acc="", scoreHead="";
   try{
     for(const p of [1,2,3,4,5]){
       // Mỗi tiêu chí: nếu bị cắt giữa chừng thì TỰ GỌI VIẾT TIẾP cho trọn rồi mới sang tiêu chí sau.
       let passText="", complete=false, tries=0;
-      while(!complete && tries<6){
+      while(!complete && tries<3){   // cap 3 lượt/tiêu chí -> chống chạy lặp vô hạn & tốn phí
         tries++;
-        const payload={essay,prompt,part:p}; if(acc) payload.prev=acc;
-        if(passText){ payload.cont=true; payload.partial=passText.slice(-4000); }
+        const payload={essay,prompt,part:p};
+        if(p>1 && scoreHead) payload.prev=scoreHead;   // chỉ gửi KHỐI ĐIỂM TỔNG (nhẹ) để giữ band nhất quán, KHÔNG gửi lại toàn bộ
+        if(passText){ payload.cont=true; payload.partial=passText.slice(-3000); }
         const before=(acc?acc+"\n\n":"")+passText;
         const r=await streamPart(FN.score, payload, md, before);
-        passText+=r.text; complete=r.complete;
+        passText+=r.text;
+        const cl=cleanScorePart(passText, p);          // bỏ phần lặp + cắt nếu lấn sang tiêu chí khác
+        passText=cl.text; complete = cl.stop || r.complete;
         if(!r.text) break;   // không nhận thêm được gì -> dừng để tránh lặp vô ích
       }
       acc=(acc?acc+"\n\n":"")+passText;
+      if(p===1) scoreHead=(acc.split(/\n###\s/)[0]||"").trim();   // "## Điểm tổng" + 4 dòng band, dùng cho các lượt sau
     }
     if(!acc.trim()) md.innerHTML="<p>Chưa có kết quả. Cậu thử lại nha.</p>";
+    else md.innerHTML=renderMarkdown(acc);   // render bản SẠCH cuối cùng (đủ, không lặp, không bị ngắt)
   }catch(err){
     let msg=err.message||"Có gì đó trục trặc rồi.";
     if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";

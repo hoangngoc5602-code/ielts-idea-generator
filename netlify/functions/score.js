@@ -144,17 +144,20 @@ export default async (req) => {
     4: "LƯỢT 4/5 — CHỈ xuất mục sau (bám đúng band đã cho ở 'ĐÃ CHẤM'):\n### Grammatical Range & Accuracy (GRA) — Band X\n(3 gạch đầu dòng; mục 'Dẫn chứng & lỗi' LIỆT KÊ HẾT lỗi ngữ pháp/dấu câu, MỖI lỗi 1 gạch đầu dòng kèm sửa đúng)",
     5: "LƯỢT 5/5 — CHỈ xuất mục sau:\n### Tổng kết & cách lên band\n(4-6 gạch đầu dòng, ưu tiên tiêu chí yếu nhất)",
   };
-  const base =
+  // KHỐI CỐ ĐỊNH trong MỘT lần chấm (đề + bài) -> đánh dấu CACHE: các lượt 2..5 đọc lại từ cache,
+  // KHÔNG tính vào giới hạn token/phút (ITPM) và chỉ tốn ~10% phí -> giảm mạnh chi phí & tránh rate limit.
+  const fixedBlock =
     "ĐỀ BÀI (Task 2):\n" + prompt + "\n\n" +
-    "BÀI VIẾT CỦA HỌC VIÊN:\n" + essay + "\n\n" +
-    (prev ? ("PHẦN ĐÃ CHẤM (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "");
-  const userMsg = cont
-    ? (base +
+    "BÀI VIẾT CỦA HỌC VIÊN:\n" + essay;
+
+  // KHỐI THAY ĐỔI theo lượt (rất nhẹ): điểm đã chấm (CHỈ phần điểm tổng) + yêu cầu của lượt.
+  const varBlock = cont
+    ? ((prev ? ("ĐIỂM ĐÃ CHẤM (giữ nhất quán):\n" + prev + "\n\n") : "") +
        "MỤC ĐANG CHẤM bị NGẮT giữa chừng. Phần ĐÃ VIẾT của mục này:\n" + partial + "\n\n" +
-       "Hãy VIẾT TIẾP NGAY TỪ CHỖ DỪNG để hoàn tất ĐÚNG mục đang dở: nối liền mạch, KHÔNG lặp lại chữ đã có, KHÔNG viết lại tiêu đề, KHÔNG mở đầu/kết. Khi xong mục thì DỪNG.")
-    : (base +
+       "Hãy VIẾT TIẾP NGAY TỪ CHỖ DỪNG để hoàn tất ĐÚNG mục đang dở: nối liền mạch, KHÔNG lặp lại chữ đã có, KHÔNG viết lại tiêu đề, KHÔNG quay lại tiêu chí trước, KHÔNG mở đầu/kết. Xong mục thì DỪNG.")
+    : ((prev ? ("ĐIỂM ĐÃ CHẤM (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
        (SECTIONS[part] || SECTIONS[1]) +
-       "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết. Tuân thủ rubric và cách trình bày gạch đầu dòng dễ đọc.");
+       "\n\nQUAN TRỌNG: Chỉ xuất ĐÚNG (các) mục của lượt này theo markdown rồi DỪNG. KHÔNG xuất sang tiêu chí khác, KHÔNG nhắc lại điểm tổng hay mục đã chấm. Tuân thủ rubric và cách trình bày gạch đầu dòng dễ đọc.");
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -167,10 +170,13 @@ export default async (req) => {
       model: MODEL,
       max_tokens: 1400,
       stream: true,
-      // Prompt caching: rubric (system) rất dài & cố định -> cache lại để các lượt sau
-      // xử lý nhanh hơn (đỡ chạm giới hạn ~26s) và rẻ hơn. Tự bỏ qua nếu API chưa bật cache.
+      // Cache 2 LỚP: (1) rubric ở system; (2) đề+bài ở tin nhắn. Lượt sau đọc từ cache
+      // -> rẻ hơn ~10x và KHÔNG tính vào rate limit token/phút. Tự bỏ qua an toàn nếu API chưa bật cache.
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: [{ role: "user", content: userMsg }],
+      messages: [{ role: "user", content: [
+        { type: "text", text: fixedBlock, cache_control: { type: "ephemeral" } },
+        { type: "text", text: varBlock },
+      ] }],
     }),
   });
 

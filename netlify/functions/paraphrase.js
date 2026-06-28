@@ -23,20 +23,30 @@ NGUYÊN TẮC:
 
 ĐẦU RA (markdown; giải thích bằng TIẾNG VIỆT, bản viết lại bằng tiếng Anh; KHÔNG dùng bảng):
 ## Bản viết lại (mục tiêu Band X)
-[câu/đoạn tiếng Anh đã viết lại]
+[câu/đoạn tiếng Anh đã viết lại — viết liền mạch, KHÔNG bọc {{ }} ở đây]
 
 ## Vì sao bản này đạt Band X — theo 4 tiêu chí
 ### Task Response (ý & lập luận)
-[bản mới làm tốt hơn gì về ý/độ liên quan/độ thuyết phục so với bản gốc — cụ thể]
+[bản mới tốt hơn gì về ý/độ liên quan/độ thuyết phục so với bản gốc — cụ thể]
 ### Coherence & Cohesion (mạch lạc & liên kết)
-[cải thiện gì về logic, liên từ, tham chiếu — trích dẫn cụ thể]
+[cải thiện gì về logic, liên từ, tham chiếu]
 ### Lexical Resource (từ vựng)
-[từ/collocation band cao đã dùng, trích nguyên văn; vì sao hợp band X]
+[từ/collocation band cao đã dùng; vì sao hợp band X]
 ### Grammatical Range & Accuracy (ngữ pháp)
-[cấu trúc đã nâng cấp/sửa lỗi, trích nguyên văn]
+[cấu trúc đã nâng cấp/sửa lỗi]
 
-QUY TẮC TRÌNH BÀY (để dễ đọc): với mỗi tiêu chí, dùng 2-3 GẠCH ĐẦU DÒNG ngắn (KHÔNG viết đoạn dài liền mạch), IN ĐẬM thay đổi chính. Mỗi gạch đầu dòng so sánh rõ TRƯỚC (bản gốc yếu chỗ nào) → SAU (bản mới nâng thế nào) và TRÍCH nguyên văn từ/cụm/cấu trúc trong bản mới làm dẫn chứng. Không nói chung chung, không từ chối; luôn đưa ra bản viết lại và giải thích đầy đủ, dễ đọc.
-VIẾT GỌN & HOÀN TẤT: mỗi tiêu chí tối đa 3 gạch đầu dòng, mỗi gạch 1-2 câu, đi thẳng vào ý.
+CÁCH TRÍCH CỤM (BẮT BUỘC — TUYỆT ĐỐI KHÔNG dùng ngoặc vuông [], ngoặc kép "" hay dấu *):
+- BỌC cụm NGUYÊN VĂN của HỌC VIÊN (bản gốc / chỗ còn yếu) trong {{s:...}}  -> sẽ hiển thị màu ĐỎ.
+- BỌC cụm MỚI / ĐÃ NÂNG CẤP trong bản viết lại của bạn trong {{n:...}}      -> sẽ hiển thị màu XANH.
+- Ví dụ: {{s:make pollution}} → {{n:give rise to pollution}}; cấu trúc mới {{n:not only ... but also ...}}.
+
+QUY TẮC TRÌNH BÀY (để dễ đọc):
+- Với mỗi tiêu chí, dùng 2-3 GẠCH ĐẦU DÒNG ngắn (KHÔNG viết đoạn dài liền mạch). Mỗi gạch so sánh rõ TRƯỚC → SAU, có trích {{s:...}} (gốc) và {{n:...}} (mới) làm dẫn chứng.
+- Cần GIẢI THÍCH CHI TIẾT HƠN thì thêm GẠCH ĐẦU DÒNG PHỤ: thụt vào 2 khoảng trắng rồi "- " (mỗi ý phụ một dòng) — sẽ hiển thị thành chấm tròn tím nhạt thụt vào.
+- IN ĐẬM chỉ dùng cho NHÃN/kết luận quan trọng. KHÔNG dùng dấu * để trích cụm (chỉ dùng {{s:}}/{{n:}}).
+- Không nói chung chung, không từ chối; luôn đưa ra bản viết lại và giải thích đầy đủ, dễ đọc.
+
+VIẾT GỌN & HOÀN TẤT: mỗi tiêu chí 2-3 gạch đầu dòng chính (kèm vài ý phụ nếu cần), mỗi gạch 1-2 câu, đi thẳng vào ý.
 XUẤT THEO TỪNG LƯỢT: chỉ xuất ĐÚNG các mục được liệt kê trong tin nhắn của lượt đó; KHÔNG lặp lại mục/đoạn đã có ở phần "ĐÃ XUẤT"; giữ NHẤT QUÁN với bản viết lại đã tạo (đúng một bản, không viết lại khác đi). Không thêm mở đầu/kết thừa.`;
 
 export default async (req) => {
@@ -74,25 +84,28 @@ export default async (req) => {
        "## Vì sao bản này đạt Band " + targetBand + " — theo 4 tiêu chí\n" +
        "### Task Response (ý & lập luận)\n" +
        "### Coherence & Cohesion (mạch lạc & liên kết)\n" +
-       "(mỗi tiêu chí 2-3 gạch đầu dòng theo khung TRƯỚC→SAU kèm trích dẫn)",
+       "(mỗi tiêu chí 2-3 gạch đầu dòng theo khung TRƯỚC→SAU, trích {{s:...}} gốc / {{n:...}} mới)",
     2: "LƯỢT 2/2 — CHỈ xuất các mục sau (bám ĐÚNG bản viết lại ở 'ĐÃ XUẤT', KHÔNG lặp lại bản viết lại):\n" +
        "### Lexical Resource (từ vựng)\n" +
        "### Grammatical Range & Accuracy (ngữ pháp)\n" +
-       "(mỗi tiêu chí 2-3 gạch đầu dòng; trích nguyên văn từ/cấu trúc trong bản viết lại)",
+       "(mỗi tiêu chí 2-3 gạch đầu dòng; trích {{s:...}} gốc / {{n:...}} mới làm dẫn chứng)",
   };
 
-  const base =
+  // KHỐI CỐ ĐỊNH trong MỘT lần nâng cấp (đề + band + câu HV) -> đánh dấu CACHE: lượt 2 đọc lại từ cache,
+  // KHÔNG tính vào giới hạn token/phút (ITPM) và chỉ tốn ~10% phí.
+  const fixedBlock =
     "ĐỀ BÀI (bối cảnh):\n" + (prompt || "(học viên không cung cấp đề — hãy suy luận bối cảnh hợp lý)") + "\n\n" +
     "BAND MỤC TIÊU: " + targetBand + "\n\n" +
-    "CÂU/ĐOẠN CỦA HỌC VIÊN:\n" + text + "\n\n" +
-    (prev ? ("PHẦN ĐÃ XUẤT (giữ nhất quán, KHÔNG lặp lại):\n" + prev + "\n\n") : "");
-  const userMsg = cont
-    ? (base +
+    "CÂU/ĐOẠN CỦA HỌC VIÊN:\n" + text;
+
+  // KHỐI THAY ĐỔI theo lượt (nhẹ): phần đã xuất (chỉ BẢN VIẾT LẠI) + yêu cầu của lượt.
+  const varBlock = cont
+    ? ((prev ? ("BẢN VIẾT LẠI ĐÃ TẠO (bám đúng, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
        "MỤC ĐANG VIẾT bị NGẮT giữa chừng. Phần ĐÃ VIẾT của mục này:\n" + partial + "\n\n" +
-       "Hãy VIẾT TIẾP NGAY TỪ CHỖ DỪNG để hoàn tất ĐÚNG mục đang dở: nối liền mạch, KHÔNG lặp lại chữ đã có, KHÔNG viết lại tiêu đề, KHÔNG mở đầu/kết. Khi xong mục thì DỪNG.")
-    : (base +
+       "Hãy VIẾT TIẾP NGAY TỪ CHỖ DỪNG để hoàn tất ĐÚNG mục đang dở: nối liền mạch, KHÔNG lặp lại chữ đã có, KHÔNG viết lại tiêu đề, KHÔNG quay lại mục trước, KHÔNG mở đầu/kết. Xong mục thì DỪNG.")
+    : ((prev ? ("BẢN VIẾT LẠI ĐÃ TẠO (bám đúng, KHÔNG lặp lại):\n" + prev + "\n\n") : "") +
        (SECTIONS[part] || SECTIONS[1]) +
-       "\n\nChỉ xuất đúng các mục trên (markdown), không thêm lời dẫn/kết.");
+       "\n\nQUAN TRỌNG: Chỉ xuất ĐÚNG (các) mục của lượt này theo markdown rồi DỪNG. KHÔNG xuất sang mục/tiêu chí khác, KHÔNG viết lại bản viết lại nếu đã có ở 'ĐÃ XUẤT'.");
 
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -105,9 +118,13 @@ export default async (req) => {
       model: MODEL,
       max_tokens: 1400,
       stream: true,
-      // Prompt caching: phần system cố định -> cache để lượt 2 nhanh & rẻ hơn (tự bỏ qua nếu chưa bật).
+      // Cache 2 LỚP: (1) hướng dẫn ở system; (2) đề+band+câu HV ở tin nhắn. Lượt 2 đọc từ cache
+      // -> rẻ hơn ~10x và KHÔNG tính vào rate limit token/phút. Tự bỏ qua an toàn nếu API chưa bật cache.
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: [{ role: "user", content: userMsg }],
+      messages: [{ role: "user", content: [
+        { type: "text", text: fixedBlock, cache_control: { type: "ephemeral" } },
+        { type: "text", text: varBlock },
+      ] }],
     }),
   });
 
