@@ -19,6 +19,8 @@ BƯỚC 1 — XÁC ĐỊNH SỐ HƯỚNG cần triển khai:
 - Nếu là đề HAI PHẦN hoàn chỉnh (lợi ích & hạn chế; nguyên nhân & giải pháp; vấn đề & giải pháp;
   thảo luận hai quan điểm; agree/disagree có khai thác cả hai mặt) -> tạo 2 NHÓM, MỖI nhóm ĐÚNG 3 ý
   (vd 3 lợi ích + 3 hạn chế). Đặt nhãn hướng cho mỗi nhóm (side_vi + side_en).
+- TỐI ĐA 2 NHÓM. Nếu đề có NHIỀU HƠN 2 hướng (vd vừa hỏi nguyên nhân, vừa hỏi tốt/xấu = 3 vế),
+  CHỈ chọn 2 hướng QUAN TRỌNG NHẤT để triển khai; TUYỆT ĐỐI không tạo quá 2 nhóm (tránh output quá dài bị cắt).
 
 BƯỚC 2 — MỖI Ý gồm 5 phần:
 - "idea_vi": câu ĐƠN, ngắn gọn, chung chung, đi thẳng giới thiệu luận điểm; RÕ RÀNG thuộc về chủ đề.
@@ -137,7 +139,7 @@ function streamAnthropicText(upstreamBody, ctx) {
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
       let buffer = "";
-      let usage = null, outTokens = 0;
+      let usage = null, outTokens = 0, stopReason = "";
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -156,8 +158,9 @@ function streamAnthropicText(upstreamBody, ctx) {
                 controller.enqueue(encoder.encode(evt.delta.text));
               } else if (evt.type === "message_start" && evt.message && evt.message.usage) {
                 usage = Object.assign({}, evt.message.usage);
-              } else if (evt.type === "message_delta" && evt.usage && typeof evt.usage.output_tokens === "number") {
-                outTokens = evt.usage.output_tokens;
+              } else if (evt.type === "message_delta") {
+                if (evt.delta && evt.delta.stop_reason) stopReason = evt.delta.stop_reason;
+                if (evt.usage && typeof evt.usage.output_tokens === "number") outTokens = evt.usage.output_tokens;
               }
             } catch (e) { /* skip */ }
           }
@@ -166,8 +169,8 @@ function streamAnthropicText(upstreamBody, ctx) {
         controller.enqueue(new TextEncoder().encode(" "));
       } finally {
         try {
-          // CHỈ trừ lượt khi AI đã thực sự trả nội dung (outTokens > 0). Gọi lỗi/không trả gì -> KHÔNG trừ.
-          if (ctx && ctx.consume && outTokens > 0) await useQuota(ctx.email, FEATURE, true);
+          // CHỈ trừ lượt khi JSON sinh XONG trọn vẹn (end_turn). Bị cắt do đề nặng/đứt mạng -> JSON lỗi -> KHÔNG trừ.
+          if (ctx && ctx.consume && stopReason === "end_turn") await useQuota(ctx.email, FEATURE, true);
         } catch (e) { /* bỏ qua */ }
         try {
           if (ctx && ctx.email && usage) {

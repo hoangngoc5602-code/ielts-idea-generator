@@ -289,10 +289,10 @@
     </nav>
 
     <section class="panel-tool active" id="tab-ideas">
-      <p class="tool-intro">Cho tớ một chủ đề (tiếng Việt hay tiếng Anh đều được), tớ tặng cậu ý tưởng &amp; từ vựng band cao song ngữ cho Task 2 nha!</p>
+      <p class="tool-intro">Cho tớ một chủ đề (tiếng Việt hay tiếng Anh đều được), tớ tặng cậu ý tưởng &amp; từ vựng band cao song ngữ cho Task 2 nha! <strong>Mẹo:</strong> chủ đề nên tối đa 2 vế (vd lợi ích &amp; tác hại, hoặc nguyên nhân &amp; giải pháp) để kết quả chuẩn nhất, tránh bị lỗi.</p>
       <section class="panel glass">
         <label class="field-label" for="topic">Chủ đề nghị luận</label>
-        <textarea id="topic" class="short" placeholder="Dán hoặc gõ chủ đề Task 2 vào đây. Ví dụ: Các lợi ích của robot / The benefits of working from home"></textarea>
+        <textarea id="topic" class="short" placeholder="Dán/gõ chủ đề Task 2 — nên TỐI ĐA 2 vế (vd: lợi ích & tác hại, hoặc nguyên nhân & giải pháp). Ví dụ: Các lợi ích của robot"></textarea>
         <div style="margin-top:12px"><button class="go auto" id="goBtn" onclick="generate()"><span class="btn-spin" aria-hidden="true"></span><span class="btn-label">Tạo ý tưởng</span></button></div>
         <div class="examples"><span class="lbl">Gợi ý:</span>
           <button class="chip" onclick="setTopic('Lợi ích và hạn chế của mạng xã hội')">Mạng xã hội</button>
@@ -580,7 +580,7 @@ async function generate(){
     let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
     let data;
     try{data=JSON.parse(txt);}
-    catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn). Cậu bấm Tạo ý tưởng lại giúp tớ nha!");}
+    catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn, hoặc đề quá nhiều vế). Cậu hãy giảm bớt vế (tối đa 2 vế) rồi bấm Tạo ý tưởng lại giúp tớ nha! (Lượt này KHÔNG bị trừ nhé.)");}
     renderIdeas(data);
   }catch(err){let msg=err.message||"Có gì đó trục trặc rồi.";if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";errText.textContent=msg;errEl.className="error glass show";}
   finally{btn.disabled=false;btn.classList.remove("loading");statusEl.className="";stopLoadingMsgs();}
