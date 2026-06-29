@@ -74,8 +74,10 @@ export default async (req) => {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
 
-  // 1 lần nâng cấp = nhiều lượt gọi; chỉ TRỪ quota ở lượt MỞ ĐẦU (part 1, không phải nối tiếp).
+  // 1 lần nâng cấp = nhiều lượt gọi. KIỂM quota ở lượt mở đầu (part 1); chỉ TRỪ ở lượt CUỐI (part 2)
+  // khi đã hoàn thành -> lỗi giữa chừng KHÔNG bị trừ.
   const isStart = (part === 1 && !cont);
+  const isFinal = (part === 2 && !cont);
 
   // --- CỔNG (2): gói/quota (bỏ qua nếu allowlisted) ---
   const allow = await isAllowlisted(email);
@@ -143,7 +145,7 @@ export default async (req) => {
 
   // Việc TRỪ lượt được dời vào trong stream, CHỈ thực hiện khi AI đã trả được nội dung
   // (xem streamAnthropicText) -> gọi AI lỗi/không trả gì thì học viên KHÔNG bị trừ lượt.
-  return new Response(streamAnthropicText(upstream.body, { email, consume: (!allow && isStart) }), {
+  return new Response(streamAnthropicText(upstream.body, { email, consume: (!allow && isFinal), isStart, isFinal }), {
     headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" },
   });
 };
@@ -186,16 +188,13 @@ function streamAnthropicText(upstreamBody, ctx) {
       } catch (e) {
         controller.enqueue(new TextEncoder().encode("\n\n[Lỗi truyền dữ liệu: " + (e.message || e) + "]"));
       } finally {
-        try {
-          // CHỈ trừ lượt khi AI đã thực sự trả nội dung (outTokens > 0). Gọi lỗi/không trả gì -> KHÔNG trừ.
-          if (ctx && ctx.consume && outTokens > 0) await useQuota(ctx.email, FEATURE, true);
-        } catch (e) { /* bỏ qua */ }
-        try {
-          if (ctx && ctx.email && usage) {
-            usage.output_tokens = outTokens || usage.output_tokens || 0;
-            await addCost(ctx.email, FEATURE, costMicroFromUsage(usage, RATES));
-          }
-        } catch (e) { /* bỏ qua */ }
+        const produced = outTokens > 0;   // lượt gọi này có sinh nội dung không
+        if (ctx && ctx.email && usage && produced) {
+          usage.output_tokens = outTokens || usage.output_tokens || 0;
+          try { await addCost(ctx.email, FEATURE, costMicroFromUsage(usage, RATES), ctx.isStart, ctx.isFinal); } catch (e) { /* bỏ qua */ }
+        }
+        // Trừ lượt CHỈ ở lượt CUỐI & khi đã có nội dung -> lỗi giữa chừng KHÔNG bị trừ.
+        if (ctx && ctx.consume && produced) { try { await useQuota(ctx.email, FEATURE, true); } catch (e) { /* bỏ qua */ } }
         controller.close();
       }
     },

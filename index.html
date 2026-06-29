@@ -196,7 +196,8 @@
   .user-bar .user-logout{font-family:var(--font-head);font-size:12.5px;font-weight:600;color:#fff;background:var(--grad);border:0;border-radius:999px;padding:7px 13px;min-height:32px;}
   .user-bar .user-logout:hover{filter:brightness(1.08);} .user-bar .user-logout:active{transform:scale(.96);}
   /* ===== PHẦN 2: gói / banner gia hạn / modal thanh toán ===== */
-  .user-plan{font-family:var(--font-head);font-size:12px;font-weight:700;color:#C7CBFF;background:rgba(99,102,241,.18);border:1px solid rgba(129,140,248,.32);border-radius:999px;padding:4px 10px;}
+  .user-plan{font-family:var(--font-head);font-size:12px;font-weight:700;color:#C7CBFF;background:rgba(99,102,241,.18);border:1px solid rgba(129,140,248,.32);border-radius:999px;padding:4px 10px;cursor:pointer;}
+  .user-plan:hover{filter:brightness(1.12);}
   .user-plan-btn{font-family:var(--font-head);font-size:12.5px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--glass-border);border-radius:999px;padding:7px 12px;min-height:32px;cursor:pointer;}
   .user-plan-btn:hover{background:rgba(255,255,255,.16);border-color:var(--ring);}
   .renew-banner{display:none;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:0 0 18px;border-radius:14px;padding:11px 16px;background:var(--grad);color:#fff;font-weight:600;font-size:13.5px;text-align:center;box-shadow:0 10px 24px rgba(99,102,241,.4);}
@@ -222,6 +223,23 @@
   .plan-card .go{width:100%;min-height:46px;font-size:14.5px;margin-top:auto;}
   .plan-card .cur{text-align:center;font-size:12.5px;color:var(--accent);font-weight:600;margin-top:auto;padding:10px 0 0;}
   .pay-note{margin-top:16px;font-size:13px;color:var(--ink-soft);line-height:1.6;text-align:center;}
+  .me-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;color:#DCE0EE;}
+  .me-row:last-child{border-bottom:0;}
+  .me-row b{font-family:var(--font-head);color:#fff;}
+  .me-quota{margin-top:4px;}
+  .me-note{color:var(--ink-soft);font-size:14px;margin:12px 0 0;line-height:1.6;}
+  .plans-explain{background:rgba(99,102,241,.16);border:1px solid rgba(129,140,248,.32);border-radius:12px;padding:12px 14px;margin:0 0 18px;color:#E7EAF5;font-size:14px;line-height:1.55;}
+  .cta-up{display:inline-block;margin-left:8px;font-family:var(--font-head);font-weight:700;font-size:12.5px;color:#fff;background:var(--grad);border:0;border-radius:999px;padding:6px 14px;min-height:30px;cursor:pointer;vertical-align:middle;}
+  .cta-up:hover{filter:brightness(1.1);}
+  .alacarte{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);}
+  .ala-title{font-family:var(--font-head);font-size:15px;font-weight:700;color:#fff;margin:0 0 12px;}
+  .ala-tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .ala-tab{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--ink-soft);background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:999px;padding:8px 16px;cursor:pointer;}
+  .ala-tab.on{background:var(--grad);color:#fff;border-color:transparent;}
+  #alaSlider{width:100%;accent-color:var(--violet);margin:6px 0 10px;cursor:pointer;height:6px;}
+  .ala-info{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px;color:var(--ink-soft);font-size:14px;}
+  .ala-info b{color:#fff;}
+  .ala-info .ala-total{font-family:var(--font-head);font-size:20px;font-weight:800;color:#fff;}
 
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -266,7 +284,7 @@
   <div id="userBar" class="user-bar">
     <span class="user-dot" aria-hidden="true"></span>
     <span id="userEmail" class="user-email"></span>
-    <span id="userPlan" class="user-plan"></span>
+    <span id="userPlan" class="user-plan" onclick="openMe()" title="Xem gói & lượt còn lại"></span>
     <button class="user-plan-btn" onclick="openPlans()">Gói</button>
     <button class="user-logout" onclick="signOutUser()">Đăng xuất</button>
   </div>
@@ -359,12 +377,23 @@
     </section>
   </div>
 
+  <!-- POPUP TÀI KHOẢN — lượt còn lại của HV -->
+  <div id="meModal" class="modal-ov">
+    <div class="modal glass" style="max-width:420px">
+      <button class="x" onclick="closeMe()" aria-label="Đóng">×</button>
+      <h2>Tài khoản của bạn</h2>
+      <div id="meBody"></div>
+      <button class="go full" style="margin-top:18px" onclick="closeMe();openPlans()">Xem các gói / Nâng cấp</button>
+    </div>
+  </div>
+
   <!-- MODAL CHỌN GÓI (Phần 2) -->
   <div id="plansModal" class="modal-ov">
     <div class="modal glass">
       <button class="x" onclick="closePlans()" aria-label="Đóng">×</button>
       <h2>Chọn gói</h2>
       <p class="sub">Nâng cấp để dùng nhiều hơn. Thanh toán bằng quét VietQR (chuyển khoản ngân hàng).</p>
+      <div id="plansExplain" class="plans-explain" style="display:none"></div>
       <div class="plans">
         <div class="plan-card">
           <div class="pname">Free</div>
@@ -384,6 +413,16 @@
           <ul><li>Tìm ý tưởng: không giới hạn</li><li>Đề thi thật: không giới hạn</li><li>Paraphrase: 80 lượt/tháng</li><li>Chấm điểm: 45 bài/tháng</li></ul>
           <button class="go" onclick="buyPlan('pro',this)">Mua Pro</button>
         </div>
+      </div>
+      <div class="alacarte">
+        <h3 class="ala-title">Hoặc mua lẻ theo lượt (không hết hạn)</h3>
+        <div class="ala-tabs">
+          <button type="button" class="ala-tab on" data-f="score" onclick="setAlaFeature('score')">Chấm bài</button>
+          <button type="button" class="ala-tab" data-f="para" onclick="setAlaFeature('para')">Paraphrase</button>
+        </div>
+        <input id="alaSlider" type="range" min="0" max="5" step="1" value="2" oninput="renderAla()">
+        <div class="ala-info"><span><b id="alaQty">20</b> lượt · <span id="alaUnit">4.500đ</span>/lượt</span><b class="ala-total" id="alaTotal">90.000đ</b></div>
+        <button type="button" class="go full" onclick="buyCredits(this)">Mua <span id="alaBtnQty">20</span> lượt</button>
       </div>
       <p class="pay-note" id="payNote"></p>
     </div>
@@ -464,14 +503,76 @@ function renderStatus(){
     else b.classList.remove("show");
   } else if(b){ b.classList.remove("show"); }
 }
-function openPlans(){
+function openPlans(explain){
+  const ex=document.getElementById("plansExplain");
+  if(ex){ if(explain){ ex.textContent=explain; ex.style.display="block"; } else { ex.style.display="none"; ex.textContent=""; } }
   const m=document.getElementById("plansModal"); if(m) m.classList.add("show");
   const cur=MYSTATUS&&MYSTATUS.plan;
   const note=document.getElementById("payNote");
   if(note) note.textContent = (cur&&cur!=="free"&&cur!=="unlimited") ? ("Gói hiện tại: "+planLabel(cur)+". Mua/gia hạn sẽ cộng thêm 30 ngày vào hạn hiện có.") : "";
   const cf=document.getElementById("curFree"); if(cf) cf.style.display=(cur==="free")?"block":"none";
+  renderAla();
 }
 function closePlans(){ const m=document.getElementById("plansModal"); if(m) m.classList.remove("show"); }
+async function openMe(){
+  await fetchStatus();
+  const s=MYSTATUS||{}, body=document.getElementById("meBody");
+  if(body){
+    let h="<div class='me-row'><span>Gói hiện tại</span><b>"+planLabel(s.plan)+"</b></div>";
+    if(s.expires_at&&(s.plan==="standard"||s.plan==="pro")) h+="<div class='me-row'><span>Hạn dùng đến</span><b>"+new Date(s.expires_at).toLocaleDateString("vi-VN")+"</b></div>";
+    if(s.plan==="unlimited"){ h+="<p class='me-note'>Bạn được cấp dùng <b>không giới hạn</b> — thoải mái nhé!</p>"; }
+    else{
+      const f=v=>(v===null||v===undefined)?"—":v;
+      const ex=n=>(n>0)?" <small style='color:var(--accent)'>(gồm "+n+" mua lẻ)</small>":"";
+      h+="<div class='me-quota'>"
+        +"<div class='me-row'><span>Tìm ý tưởng <small style='color:var(--ink-muted)'>(hôm nay)</small></span><b>"+f(s.ideas_left)+" lượt</b></div>"
+        +"<div class='me-row'><span>Paraphrase <small style='color:var(--ink-muted)'>(kỳ này)</small></span><b>"+f(s.para_left)+" lượt"+ex(s.extra_para)+"</b></div>"
+        +"<div class='me-row'><span>Chấm điểm <small style='color:var(--ink-muted)'>(kỳ này)</small></span><b>"+f(s.score_left)+" lượt"+ex(s.extra_score)+"</b></div>"
+        +"</div>";
+    }
+    body.innerHTML=h;
+  }
+  const m=document.getElementById("meModal"); if(m) m.classList.add("show");
+}
+function closeMe(){ const m=document.getElementById("meModal"); if(m) m.classList.remove("show"); }
+/* Thông điệp khi hết lượt — riêng cho từng tính năng */
+function quotaExplain(feature){
+  if(feature==="ideas") return "Bạn đã hết lượt Tìm ý tưởng trong ngày rồi 🌱 Đăng ký gói Standard hoặc Pro để brainstorm thả ga mỗi ngày nha!";
+  if(feature==="para")  return "Bạn đã hết lượt nâng cao câu miễn phí rồi. Đừng lo — với gói Standard hoặc Pro, bạn có tới 30–80 lượt Paraphrase câu/đoạn/bài mỗi tháng, tha hồ viết luôn nha!";
+  if(feature==="score") return "Bạn đã hết lượt Chấm điểm miễn phí rồi. Lên gói Standard hoặc Pro để được chấm 20–45 bài mỗi tháng, soi kỹ từng lỗi như giám khảo thật nha!";
+  return "Bạn đã hết lượt dùng. Nâng gói để tiếp tục nhé!";
+}
+/* Lần ĐẦU hết lượt mỗi tính năng -> bật modal kèm giải thích (1 lần/máy). Lần sau chỉ hiện inline + CTA. */
+function maybePopupQuota(feature){
+  const key="qseen_"+feature; let seen=false;
+  try{ seen=localStorage.getItem(key)==="1"; }catch(e){}
+  if(!seen){ try{ localStorage.setItem(key,"1"); }catch(e){} openPlans(quotaExplain(feature)); }
+}
+/* MUA LẺ theo lượt — bảng giá & thanh trượt */
+const PACKS={
+  score:[[5,27500],[10,50000],[20,90000],[50,200000],[100,370000],[200,700000]],
+  para:[[10,25000],[20,46000],[50,100000],[100,180000],[200,320000],[500,700000]]
+};
+let alaFeature="score";
+function setAlaFeature(f){ alaFeature=f; document.querySelectorAll(".ala-tab").forEach(b=>b.classList.toggle("on",b.dataset.f===f)); const sl=document.getElementById("alaSlider"); if(sl) sl.value="2"; renderAla(); }
+function renderAla(){
+  const sl=document.getElementById("alaSlider"); if(!sl) return;
+  const arr=PACKS[alaFeature]; let i=parseInt(sl.value,10)||0; if(i<0)i=0; if(i>arr.length-1)i=arr.length-1;
+  const qty=arr[i][0], total=arr[i][1], unit=Math.round(total/qty);
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+  set("alaQty",qty); set("alaUnit",unit.toLocaleString("vi-VN")+"đ"); set("alaTotal",total.toLocaleString("vi-VN")+"đ"); set("alaBtnQty",qty);
+}
+async function buyCredits(btn){
+  const sl=document.getElementById("alaSlider"); const arr=PACKS[alaFeature]; let i=parseInt(sl.value,10)||0; if(i>arr.length-1)i=arr.length-1;
+  const qty=arr[i][0], orig=btn.textContent;
+  btn.disabled=true; btn.textContent="Đang tạo mã thanh toán…";
+  try{
+    const r=await fetch(FN.pay,{method:"POST",headers:await authHeaders(),body:JSON.stringify({kind:"credits",feature:alaFeature,qty})});
+    const t=await r.text(); let j={}; try{j=JSON.parse(t);}catch(e){}
+    if(!r.ok||!j.ok||!j.checkoutUrl){ alert((j&&j.error)||t||"Không tạo được thanh toán."); btn.disabled=false; btn.textContent=orig; return; }
+    window.location.href=j.checkoutUrl;
+  }catch(e){ alert("Lỗi kết nối, thử lại nhé."); btn.disabled=false; btn.textContent=orig; }
+}
 async function buyPlan(plan, btn){
   const orig=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent="Đang tạo mã thanh toán…"; }
@@ -488,14 +589,8 @@ function handlePayParams(){
   history.replaceState(null,"",location.pathname);
   if(p==="cancel") return;
   if(p==="return"){
-    openPlans();
-    const note=document.getElementById("payNote");
-    if(note) note.textContent="Đang xác nhận thanh toán… (gói sẽ tự kích hoạt trong vài giây)";
-    let n=0; const iv=setInterval(async()=>{
-      n++; await fetchStatus(); const pl=MYSTATUS&&MYSTATUS.plan;
-      if(pl==="standard"||pl==="pro"){ clearInterval(iv); if(note) note.textContent="Kích hoạt thành công! Gói của bạn: "+planLabel(pl)+" 🎉"; }
-      else if(n>=12){ clearInterval(iv); if(note) note.textContent="Nếu bạn đã chuyển khoản, gói sẽ kích hoạt trong giây lát — tải lại trang sau ít phút nhé. Cần hỗ trợ thì nhắn Zalo/Facebook ở màn đăng nhập."; }
-    },3000);
+    // Chờ webhook xử lý (gói tháng HOẶC lượt mua lẻ) rồi mở popup Tài khoản cho HV xem kết quả mới nhất.
+    let n=0; const iv=setInterval(async()=>{ n++; await fetchStatus(); if(n>=3){ clearInterval(iv); openMe(); } }, 2500);
   }
 }
 
@@ -549,7 +644,7 @@ async function streamTool(url, payload, outBox, mdEl, btn){
   btn.disabled=true; btn.classList.add("loading");
   try{
     const resp=await fetch(url,{method:"POST",headers:await authHeaders(),body:JSON.stringify(payload)});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");if(resp.status===402)openPlans();throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");const er=new Error(t||("Lỗi máy chủ ("+resp.status+")"));er.status=resp.status;throw er;}
     const reader=resp.body.getReader();const decoder=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=decoder.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(full);}
     if(!full.trim()) mdEl.innerHTML="<p>Không có nội dung trả về. Bạn thử lại nhé.</p>";
@@ -574,7 +669,7 @@ async function generate(){
   btn.disabled=true;btn.classList.add("loading");statusEl.className="show";startLoadingMsgs();
   try{
     const resp=await fetch(FN.ideas,{method:"POST",headers:await authHeaders(),body:JSON.stringify({topic})});
-    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");if(resp.status===402)openPlans();throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+    if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");const er=new Error(t||("Lỗi máy chủ ("+resp.status+")"));er.status=resp.status;throw er;}
     const reader=resp.body.getReader(),dec=new TextDecoder();let full="";
     while(true){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});}
     let txt=full.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
@@ -582,7 +677,7 @@ async function generate(){
     try{data=JSON.parse(txt);}
     catch(e){throw new Error("Kết quả trả về bị lỗi định dạng (có thể do kết nối gián đoạn, hoặc đề quá nhiều vế). Cậu hãy giảm bớt vế (tối đa 2 vế) rồi bấm Tạo ý tưởng lại giúp tớ nha! (Lượt này KHÔNG bị trừ nhé.)");}
     renderIdeas(data);
-  }catch(err){let msg=err.message||"Có gì đó trục trặc rồi.";if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";errText.textContent=msg;errEl.className="error glass show";}
+  }catch(err){if(err&&err.status===402){errText.innerHTML=esc(quotaExplain("ideas"))+' <button class="cta-up" onclick="openPlans()">Nâng gói</button>';errEl.className="error glass show";maybePopupQuota("ideas");}else{let msg=err.message||"Có gì đó trục trặc rồi.";if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";errText.textContent=msg;errEl.className="error glass show";}}
   finally{btn.disabled=false;btn.classList.remove("loading");statusEl.className="";stopLoadingMsgs();}
 }
 function ideaCard(it,n){
@@ -713,9 +808,12 @@ async function runParaphrase(){
     if(!acc.trim()) md.innerHTML="<p>Chưa có nội dung trả về. Bạn thử lại nhé.</p>";
     else md.innerHTML=renderMarkdown(acc);   // render bản SẠCH cuối cùng (đủ, không lặp)
   }catch(err){
-    let msg=err.message||"Đã có lỗi xảy ra.";
-    if(/Failed to fetch|NetworkError/i.test(msg)) msg="Không gọi được máy chủ. Nếu bạn mở file trực tiếp thì cần deploy lên Netlify rồi mở qua link Netlify.";
-    md.innerHTML=(acc?renderMarkdown(acc):"")+'<div class="err-inline">'+esc(msg)+'</div>';
+    if(err&&err.status===402){ md.innerHTML='<div class="err-inline">'+esc(quotaExplain("para"))+' <button class="cta-up" onclick="openPlans()">Nâng gói</button></div>'; maybePopupQuota("para"); }
+    else {
+      let msg=err.message||"Đã có lỗi xảy ra.";
+      if(/Failed to fetch|NetworkError/i.test(msg)) msg="Không gọi được máy chủ. Nếu bạn mở file trực tiếp thì cần deploy lên Netlify rồi mở qua link Netlify.";
+      md.innerHTML=(acc?renderMarkdown(acc):"")+'<div class="err-inline">'+esc(msg)+'</div>';
+    }
   }finally{ btn.disabled=false; btn.classList.remove("loading"); }
 }
 /* TAB 4: Chấm điểm */
@@ -724,7 +822,7 @@ const DONE_MARK="[[[DONE]]]";
 function stripDone(s){ return s.split(DONE_MARK).join(""); }
 async function streamPart(url, payload, mdEl, prefix){
   const resp=await fetch(url,{method:"POST",headers:await authHeaders(),body:JSON.stringify(payload)});
-  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");if(resp.status===402)openPlans();throw new Error(t||("Lỗi máy chủ ("+resp.status+")"));}
+  if(!resp.ok||!resp.body){const t=await resp.text().catch(()=> "");if(resp.status===401)showAuth("Phiên đăng nhập đã hết hạn. Cậu đăng nhập lại nhé.");const er=new Error(t||("Lỗi máy chủ ("+resp.status+")"));er.status=resp.status;throw er;}
   const reader=resp.body.getReader(),dec=new TextDecoder();let cur="";
   try{
     while(true){const {done,value}=await reader.read();if(done)break;cur+=dec.decode(value,{stream:true});mdEl.innerHTML=renderMarkdown(prefix+stripDone(cur));}
@@ -785,9 +883,12 @@ async function runScore(){
     if(!acc.trim()) md.innerHTML="<p>Chưa có kết quả. Cậu thử lại nha.</p>";
     else md.innerHTML=renderMarkdown(acc);   // render bản SẠCH cuối cùng (đủ, không lặp, không bị ngắt)
   }catch(err){
-    let msg=err.message||"Có gì đó trục trặc rồi.";
-    if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";
-    md.innerHTML=(acc?renderMarkdown(acc):"")+'<div class="err-inline">'+esc(msg)+'</div>';
+    if(err&&err.status===402){ md.innerHTML='<div class="err-inline">'+esc(quotaExplain("score"))+' <button class="cta-up" onclick="openPlans()">Nâng gói</button></div>'; maybePopupQuota("score"); }
+    else {
+      let msg=err.message||"Có gì đó trục trặc rồi.";
+      if(/Failed to fetch|NetworkError/i.test(msg)) msg="Tớ chưa gọi được máy chủ. Nếu cậu mở file trực tiếp thì cần deploy lên Netlify đã nha.";
+      md.innerHTML=(acc?renderMarkdown(acc):"")+'<div class="err-inline">'+esc(msg)+'</div>';
+    }
   }finally{ btn.disabled=false; btn.classList.remove("loading"); }
 }
 

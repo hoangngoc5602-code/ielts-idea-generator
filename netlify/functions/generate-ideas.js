@@ -127,7 +127,7 @@ export default async (req) => {
 
   // Việc TRỪ lượt được dời vào trong stream, CHỈ thực hiện khi AI đã trả được nội dung
   // (xem streamAnthropicText) -> gọi AI lỗi/không trả gì thì học viên KHÔNG bị trừ lượt.
-  return new Response(streamAnthropicText(upstream.body, { email, consume: !allow }), {
+  return new Response(streamAnthropicText(upstream.body, { email, consume: !allow, isStart: true, isFinal: true }), {
     headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" },
   });
 };
@@ -168,16 +168,12 @@ function streamAnthropicText(upstreamBody, ctx) {
       } catch (e) {
         controller.enqueue(new TextEncoder().encode(" "));
       } finally {
-        try {
-          // CHỈ trừ lượt khi JSON sinh XONG trọn vẹn (end_turn). Bị cắt do đề nặng/đứt mạng -> JSON lỗi -> KHÔNG trừ.
-          if (ctx && ctx.consume && stopReason === "end_turn") await useQuota(ctx.email, FEATURE, true);
-        } catch (e) { /* bỏ qua */ }
-        try {
-          if (ctx && ctx.email && usage) {
-            usage.output_tokens = outTokens || usage.output_tokens || 0;
-            await addCost(ctx.email, FEATURE, costMicroFromUsage(usage, RATES));
-          }
-        } catch (e) { /* bỏ qua */ }
+        const produced = (stopReason === "end_turn");   // JSON sinh xong trọn vẹn mới tính
+        if (ctx && ctx.email && usage && produced) {
+          usage.output_tokens = outTokens || usage.output_tokens || 0;
+          try { await addCost(ctx.email, FEATURE, costMicroFromUsage(usage, RATES), ctx.isStart, ctx.isFinal); } catch (e) { /* bỏ qua */ }
+        }
+        if (ctx && ctx.consume && produced) { try { await useQuota(ctx.email, FEATURE, true); } catch (e) { /* bỏ qua */ } }
         controller.close();
       }
     },

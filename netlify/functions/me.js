@@ -31,7 +31,8 @@ export default async (req) => {
     });
     const s = await r.json().catch(() => ({}));
     return json({ ok: true, email, plan: s.plan || "free", expires_at: s.expires_at || null,
-      ideas_left: s.ideas_left, para_left: s.para_left, score_left: s.score_left });
+      ideas_left: s.ideas_left, para_left: s.para_left, score_left: s.score_left,
+      extra_score: s.extra_score || 0, extra_para: s.extra_para || 0 });
   } catch (e) {
     return json({ ok: true, email, plan: "free", expires_at: null });
   }

@@ -17,8 +17,13 @@ const CHECKSUM = process.env.PAYOS_CHECKSUM_KEY || "";
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/+$/, "");
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-// Giá gói (VND) — quyết định ở SERVER, không tin số tiền từ client.
+// Giá gói tháng (VND) — quyết định ở SERVER, không tin số tiền từ client.
 const PRICES = { standard: 99000, pro: 199000 };
+// Bảng giá MUA LẺ theo lượt (VND). Server là nguồn giá chuẩn.
+const PACKS = {
+  score: { 5: 27500, 10: 50000, 20: 90000, 50: 200000, 100: 370000, 200: 700000 },
+  para:  { 10: 25000, 20: 46000, 50: 100000, 100: 180000, 200: 320000, 500: 700000 },
+};
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -32,18 +37,34 @@ export default async (req) => {
   if (u.error) return u.error;
   const email = u.email;
 
-  let plan = "";
-  try { plan = ((await req.json()).plan || "").toString().trim().toLowerCase(); }
-  catch (e) { return deny(400, "Dữ liệu không hợp lệ."); }
-  if (!PRICES[plan]) return deny(400, "Gói không hợp lệ (chỉ 'standard' hoặc 'pro').");
-  const amount = PRICES[plan];
+  let body;
+  try { body = await req.json(); } catch (e) { return deny(400, "Dữ liệu không hợp lệ."); }
+  const kind = (body.kind || "plan").toString();
+
+  let amount, description, orderRow;
+  if (kind === "credits") {
+    // MUA LẺ theo lượt
+    const feature = (body.feature || "").toString().trim().toLowerCase();
+    const qty = parseInt(body.qty, 10) || 0;
+    if (!PACKS[feature] || !PACKS[feature][qty]) return deny(400, "Gói lẻ không hợp lệ.");
+    amount = PACKS[feature][qty];
+    description = ((feature === "score" ? "Cham bai " : "Paraphrase ") + qty + " luot").slice(0, 25);
+    orderRow = { email, kind: "credits", plan: "", feature, qty, amount_vnd: amount, status: "pending" };
+  } else {
+    // GÓI THÁNG
+    const plan = (body.plan || "").toString().trim().toLowerCase();
+    if (!PRICES[plan]) return deny(400, "Gói không hợp lệ (chỉ 'standard' hoặc 'pro').");
+    amount = PRICES[plan];
+    description = ("IELTS " + plan.toUpperCase()).slice(0, 25);
+    orderRow = { email, kind: "plan", plan, amount_vnd: amount, status: "pending" };
+  }
 
   const origin = ((req.headers.get("origin") || process.env.SITE_URL || "")).replace(/\/+$/, "");
   if (!/^https?:\/\//.test(origin)) return deny(500, "Không xác định được địa chỉ web.");
   const returnUrl = origin + "/?pay=return";
   const cancelUrl = origin + "/?pay=cancel";
-  const description = ("IELTS " + plan.toUpperCase()).slice(0, 25); // hiển thị trong nội dung CK
   const orderCode = Date.now(); // duy nhất theo mili-giây
+  orderRow.order_code = orderCode;
 
   // Chữ ký: HMAC_SHA256 trên chuỗi 5 trường, ĐÚNG thứ tự alphabet (theo tài liệu PayOS).
   const sigData =
@@ -62,7 +83,7 @@ export default async (req) => {
         "Content-Type": "application/json",
         apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, Prefer: "return=minimal",
       },
-      body: JSON.stringify({ order_code: orderCode, email, plan, amount_vnd: amount, status: "pending" }),
+      body: JSON.stringify(orderRow),
     });
     if (!ins.ok) {
       const t = await ins.text().catch(() => "");
@@ -85,7 +106,7 @@ export default async (req) => {
 
   return new Response(JSON.stringify({
     ok: true,
-    plan, amount, orderCode,
+    kind, amount, orderCode,
     qrCode: j.data.qrCode,            // chuỗi VietQR -> frontend vẽ thành mã QR
     checkoutUrl: j.data.checkoutUrl,  // hoặc mở trang thanh toán của PayOS
     bin: j.data.bin,

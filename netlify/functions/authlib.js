@@ -104,10 +104,15 @@ export async function useQuota(email, feature, consume) {
 }
 
 // ---- 4) Ghi chi phí thật (best-effort, không làm hỏng luồng nếu lỗi) ----
-export async function addCost(email, feature, costMicro) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !costMicro || costMicro <= 0) return;
+// Ghi chi phí + GỘP theo LƯỢT dùng: is_start = lần đầu của lượt, is_final = lần cuối (chốt & ghi 1 dòng usage_log).
+export async function addCost(email, feature, costMicro, isStart, isFinal) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
   try {
-    await rpc("add_cost", { p_email: email, p_feature: feature, p_cost_micro: Math.round(costMicro) });
+    await rpc("log_cost", {
+      p_email: email, p_feature: feature,
+      p_cost_micro: Math.round(costMicro || 0),
+      p_is_start: !!isStart, p_is_final: !!isFinal,
+    });
   } catch (e) { /* bỏ qua */ }
 }
 

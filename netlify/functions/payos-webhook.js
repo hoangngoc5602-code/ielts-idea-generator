@@ -56,7 +56,7 @@ export default async (req) => {
     const hdr = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY };
     // Tra đơn
     const q = await fetch(
-      SUPABASE_URL + "/rest/v1/orders?order_code=eq." + orderCode + "&select=email,plan,amount_vnd,status",
+      SUPABASE_URL + "/rest/v1/orders?order_code=eq." + orderCode + "&select=email,plan,kind,feature,qty,amount_vnd,status",
       { headers: hdr }
     );
     const rows = await q.json().catch(() => []);
@@ -64,18 +64,25 @@ export default async (req) => {
     if (!order) return ok({ success: true });               // đơn lạ (vd webhook test) -> bỏ qua
     if (order.status === "paid") return ok({ success: true }); // đã xử lý -> tránh cộng dồn 2 lần
 
-    // 3) Kích hoạt gói
-    await fetch(SUPABASE_URL + "/rest/v1/rpc/activate_subscription", {
-      method: "POST",
-      headers: { ...hdr, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        p_email: order.email,
-        p_plan: order.plan,
-        p_amount_vnd: order.amount_vnd || data.amount || 0,
-        p_order_code: orderCode,
-        p_raw: data,
-      }),
-    });
+    const jhdr = { ...hdr, "Content-Type": "application/json" };
+    const amt = order.amount_vnd || data.amount || 0;
+    if (order.kind === "credits") {
+      // 3a) MUA LẺ: cộng lượt + ghi doanh thu
+      await fetch(SUPABASE_URL + "/rest/v1/rpc/add_credits", {
+        method: "POST", headers: jhdr,
+        body: JSON.stringify({ p_email: order.email, p_feature: order.feature, p_qty: order.qty }),
+      });
+      await fetch(SUPABASE_URL + "/rest/v1/payments", {
+        method: "POST", headers: { ...jhdr, Prefer: "return=minimal" },
+        body: JSON.stringify({ email: order.email, plan: (order.feature || "") + "/" + (order.qty || 0) + " luot", amount_vnd: amt, order_code: orderCode, raw: data }),
+      });
+    } else {
+      // 3b) GÓI THÁNG: kích hoạt gói (hàm này tự ghi doanh thu)
+      await fetch(SUPABASE_URL + "/rest/v1/rpc/activate_subscription", {
+        method: "POST", headers: jhdr,
+        body: JSON.stringify({ p_email: order.email, p_plan: order.plan, p_amount_vnd: amt, p_order_code: orderCode, p_raw: data }),
+      });
+    }
     // Đánh dấu đơn đã trả
     await fetch(SUPABASE_URL + "/rest/v1/orders?order_code=eq." + orderCode, {
       method: "PATCH",
