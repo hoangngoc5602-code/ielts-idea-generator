@@ -228,6 +228,9 @@
   .me-row b{font-family:var(--font-head);color:#fff;}
   .me-quota{margin-top:4px;}
   .me-note{color:var(--ink-soft);font-size:14px;margin:12px 0 0;line-height:1.6;}
+  .me-up{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);}
+  .me-up-title{font-size:12.5px;color:var(--accent);font-weight:700;margin:0 0 4px;}
+  .me-hint{color:var(--ink-soft);font-size:12px;margin:8px 0 0;line-height:1.5;}
   .plans-explain{background:rgba(99,102,241,.16);border:1px solid rgba(129,140,248,.32);border-radius:12px;padding:12px 14px;margin:0 0 18px;color:#E7EAF5;font-size:14px;line-height:1.55;}
   .cta-up{display:inline-block;margin-left:8px;font-family:var(--font-head);font-weight:700;font-size:12.5px;color:#fff;background:var(--grad);border:0;border-radius:999px;padding:6px 14px;min-height:30px;cursor:pointer;vertical-align:middle;}
   .cta-up:hover{filter:brightness(1.1);}
@@ -499,7 +502,8 @@ function renderStatus(){
   const b=document.getElementById("renewBanner"), t=document.getElementById("renewText");
   if(b&&t&&MYSTATUS.expires_at&&(MYSTATUS.plan==="standard"||MYSTATUS.plan==="pro")){
     const days=Math.ceil((new Date(MYSTATUS.expires_at)-new Date())/86400000);
-    if(days<=3){ t.textContent="Gói "+planLabel(MYSTATUS.plan)+" của bạn còn "+(days>0?days+" ngày":"chưa tới 1 ngày")+". Gia hạn để không bị gián đoạn nhé!"; b.classList.add("show"); }
+    const hasNext=MYSTATUS.upcoming&&MYSTATUS.upcoming.length;
+    if(days<=3&&!hasNext){ t.textContent="Gói "+planLabel(MYSTATUS.plan)+" của bạn còn "+(days>0?days+" ngày":"chưa tới 1 ngày")+". Gia hạn để không bị gián đoạn nhé!"; b.classList.add("show"); }
     else b.classList.remove("show");
   } else if(b){ b.classList.remove("show"); }
 }
@@ -509,7 +513,7 @@ function openPlans(explain){
   const m=document.getElementById("plansModal"); if(m) m.classList.add("show");
   const cur=MYSTATUS&&MYSTATUS.plan;
   const note=document.getElementById("payNote");
-  if(note) note.textContent = (cur&&cur!=="free"&&cur!=="unlimited") ? ("Gói hiện tại: "+planLabel(cur)+". Mua/gia hạn sẽ cộng thêm 30 ngày vào hạn hiện có.") : "";
+  if(note) note.textContent = (cur&&cur!=="free"&&cur!=="unlimited") ? ("Gói hiện tại: "+planLabel(cur)+". Mua thêm sẽ tạo một khoá 30 ngày mới, tự bắt đầu khi gói hiện tại hết hạn (quota riêng, không bị mất lượt).") : "";
   const cf=document.getElementById("curFree"); if(cf) cf.style.display=(cur==="free")?"block":"none";
   renderAla();
 }
@@ -518,17 +522,27 @@ async function openMe(){
   await fetchStatus();
   const s=MYSTATUS||{}, body=document.getElementById("meBody");
   if(body){
+    const d=v=>v?new Date(v).toLocaleDateString("vi-VN"):"—";
+    const paid=(s.plan==="standard"||s.plan==="pro");
     let h="<div class='me-row'><span>Gói hiện tại</span><b>"+planLabel(s.plan)+"</b></div>";
-    if(s.expires_at&&(s.plan==="standard"||s.plan==="pro")) h+="<div class='me-row'><span>Hạn dùng đến</span><b>"+new Date(s.expires_at).toLocaleDateString("vi-VN")+"</b></div>";
+    if(paid&&(s.starts_at||s.expires_at)) h+="<div class='me-row'><span>Thời hạn</span><b>"+d(s.starts_at)+" → "+d(s.expires_at)+"</b></div>";
     if(s.plan==="unlimited"){ h+="<p class='me-note'>Bạn được cấp dùng <b>không giới hạn</b> — thoải mái nhé!</p>"; }
     else{
       const f=v=>(v===null||v===undefined)?"—":v;
       const ex=n=>(n>0)?" <small style='color:var(--accent)'>(gồm "+n+" mua lẻ)</small>":"";
+      const ideasCell=paid?"<b>Không giới hạn</b>":("<b>"+f(s.ideas_left)+" lượt</b>");
+      const idLabel=paid?"":" <small style='color:var(--ink-muted)'>(hôm nay)</small>";
       h+="<div class='me-quota'>"
-        +"<div class='me-row'><span>Tìm ý tưởng <small style='color:var(--ink-muted)'>(hôm nay)</small></span><b>"+f(s.ideas_left)+" lượt</b></div>"
-        +"<div class='me-row'><span>Paraphrase <small style='color:var(--ink-muted)'>(kỳ này)</small></span><b>"+f(s.para_left)+" lượt"+ex(s.extra_para)+"</b></div>"
-        +"<div class='me-row'><span>Chấm điểm <small style='color:var(--ink-muted)'>(kỳ này)</small></span><b>"+f(s.score_left)+" lượt"+ex(s.extra_score)+"</b></div>"
+        +"<div class='me-row'><span>Tìm ý tưởng"+idLabel+"</span>"+ideasCell+"</div>"
+        +"<div class='me-row'><span>Paraphrase</span><b>"+f(s.para_left)+" lượt"+ex(s.extra_para)+"</b></div>"
+        +"<div class='me-row'><span>Chấm điểm</span><b>"+f(s.score_left)+" lượt"+ex(s.extra_score)+"</b></div>"
         +"</div>";
+    }
+    const up=Array.isArray(s.upcoming)?s.upcoming:[];
+    if(up.length){
+      h+="<div class='me-up'><p class='me-up-title'>Gói đã mua, đang chờ kích hoạt:</p>";
+      for(const u of up) h+="<div class='me-row'><span>"+planLabel(u.plan)+"</span><b>"+d(u.starts_at)+" → "+d(u.expires_at)+"</b></div>";
+      h+="<p class='me-hint'>Gói này sẽ tự bắt đầu ngay khi gói hiện tại hết hạn.</p></div>";
     }
     body.innerHTML=h;
   }
@@ -783,7 +797,7 @@ async function runParaphrase(){
   if(!text){md.innerHTML='<div class="err-inline">Vui lòng nhập câu/đoạn bạn muốn nâng cấp.</div>';return;}
   if(!targetBand){md.innerHTML='<div class="err-inline">Vui lòng chọn band mong muốn.</div>';return;}
   fadeIn(box);
-  md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang viết lại và soi theo từng tiêu chí, chữ sẽ hiện dần nha…</div>';
+  md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang viết lại và soi theo từng tiêu chí, chữ sẽ hiện dần nha… <strong>Đừng rời trang hay tắt đi kẻo mất phần phân tích nha!</strong></div>';
   btn.disabled=true; btn.classList.add("loading");
   let acc="", rewriteBlock="";
   try{
@@ -858,7 +872,7 @@ async function runScore(){
   if(!essay){md.innerHTML='<div class="err-inline">Cậu dán bài viết cần chấm vào đã nha.</div>';return;}
   if(!prompt){md.innerHTML='<div class="err-inline">Cậu dán đề bài vào giúp tớ nha.</div>';return;}
   fadeIn(box);
-  md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang chấm kỹ theo từng tiêu chí, đợi tớ chút nha…</div>';
+  md.innerHTML='<div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Tớ đang chấm kỹ theo từng tiêu chí, đợi tớ chút nha… <strong>Đừng rời trang hay tắt đi kẻo mất phần phân tích nha!</strong></div>';
   btn.disabled=true; btn.classList.add("loading");
   let acc="", scoreHead="";
   try{

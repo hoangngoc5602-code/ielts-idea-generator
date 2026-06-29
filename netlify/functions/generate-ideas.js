@@ -93,7 +93,11 @@ export default async (req) => {
     const c = await useQuota(email, FEATURE, false);     // chỉ KIỂM trước khi gọi AI
     if (c.reason === "config")
       return deny(500, "Hệ thống gói chưa cấu hình (thiếu SUPABASE_SERVICE_ROLE_KEY trên Netlify).");
-    if (!c.allowed) return deny(402, quotaMessage(FEATURE, c));
+    if (!c.allowed) {
+      // Gói trả phí vượt trần ẩn -> KHÔNG lộ là giới hạn, báo kiểu trục trặc đường truyền.
+      if (c.reason === "cap") return deny(503, "Đường truyền đang trục trặc, bạn thử lại sau ít phút nhé.");
+      return deny(402, quotaMessage(FEATURE, c));
+    }
   }
 
   const API_KEY = process.env.ANTHROPIC_API_KEY;

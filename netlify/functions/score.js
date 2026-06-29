@@ -129,10 +129,11 @@ export default async (req) => {
     return new Response("Dữ liệu gửi lên không hợp lệ.", { status: 400 });
   }
 
-  // 1 bài chấm = nhiều lượt gọi. KIỂM quota ở lượt mở đầu (part 1) để chặn sớm nếu hết;
-  // chỉ TRỪ quota ở lượt CUỐI (part 5) khi đã hoàn thành -> lỗi giữa chừng KHÔNG bị trừ.
-  const isStart = (part === 1 && !cont);
-  const isFinal = (part === 5 && !cont);
+  // 1 bài chấm = 5 lượt gọi. KIỂM quota ở lượt mở đầu (part 1) để chặn sớm nếu hết;
+  // TRỪ quota khi trình bày XONG 2 TIÊU CHÍ ĐẦU (part 2 = TR + CC); cost vẫn chốt ở lượt CUỐI (part 5).
+  const isStart  = (part === 1 && !cont);
+  const isFinal  = (part === 5 && !cont);  // lượt cuối -> chốt cost + ghi 1 dòng usage_log
+  const isCharge = (part === 2 && !cont);  // xong 2 tiêu chí đầu -> trừ 1 lượt
 
   // --- CỔNG (2): gói/quota (bỏ qua nếu allowlisted) ---
   const allow = await isAllowlisted(email);
@@ -194,7 +195,7 @@ export default async (req) => {
 
   // Việc TRỪ lượt được dời vào trong stream, CHỈ thực hiện khi AI đã trả được nội dung
   // (xem streamAnthropicText) -> gọi AI lỗi/không trả gì thì học viên KHÔNG bị trừ lượt.
-  return new Response(streamAnthropicText(upstream.body, { email, consume: (!allow && isFinal), isStart, isFinal }), {
+  return new Response(streamAnthropicText(upstream.body, { email, consume: (!allow && isCharge), isStart, isFinal }), {
     headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" },
   });
 };

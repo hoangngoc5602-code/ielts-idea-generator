@@ -16,8 +16,8 @@ export default async (req) => {
 
   // Allowlist -> không giới hạn
   if (await isAllowlisted(email)) {
-    return json({ ok: true, email, plan: "unlimited", expires_at: null,
-      ideas_left: null, para_left: null, score_left: null });
+    return json({ ok: true, email, plan: "unlimited", starts_at: null, expires_at: null,
+      ideas_left: null, para_left: null, score_left: null, extra_score: 0, extra_para: 0, upcoming: [] });
   }
 
   if (!SUPABASE_URL || !SERVICE_KEY)
@@ -30,9 +30,9 @@ export default async (req) => {
       body: JSON.stringify({ p_email: email }),
     });
     const s = await r.json().catch(() => ({}));
-    return json({ ok: true, email, plan: s.plan || "free", expires_at: s.expires_at || null,
+    return json({ ok: true, email, plan: s.plan || "free", starts_at: s.starts_at || null, expires_at: s.expires_at || null,
       ideas_left: s.ideas_left, para_left: s.para_left, score_left: s.score_left,
-      extra_score: s.extra_score || 0, extra_para: s.extra_para || 0 });
+      extra_score: s.extra_score || 0, extra_para: s.extra_para || 0, upcoming: s.upcoming || [] });
   } catch (e) {
     return json({ ok: true, email, plan: "free", expires_at: null });
   }

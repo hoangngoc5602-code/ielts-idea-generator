@@ -77,10 +77,14 @@ export default async (req) => {
         body: JSON.stringify({ email: order.email, plan: (order.feature || "") + "/" + (order.qty || 0) + " luot", amount_vnd: amt, order_code: orderCode, raw: data }),
       });
     } else {
-      // 3b) GÓI THÁNG: kích hoạt gói (hàm này tự ghi doanh thu)
-      await fetch(SUPABASE_URL + "/rest/v1/rpc/activate_subscription", {
+      // 3b) GÓI THÁNG: tạo 1 KHOÁ mới (xếp hàng sau khoá hiện tại) + ghi doanh thu
+      await fetch(SUPABASE_URL + "/rest/v1/rpc/add_subscription", {
         method: "POST", headers: jhdr,
-        body: JSON.stringify({ p_email: order.email, p_plan: order.plan, p_amount_vnd: amt, p_order_code: orderCode, p_raw: data }),
+        body: JSON.stringify({ p_email: order.email, p_plan: order.plan }),
+      });
+      await fetch(SUPABASE_URL + "/rest/v1/payments", {
+        method: "POST", headers: { ...jhdr, Prefer: "return=minimal" },
+        body: JSON.stringify({ email: order.email, plan: order.plan, amount_vnd: amt, order_code: orderCode, raw: data }),
       });
     }
     // Đánh dấu đơn đã trả
