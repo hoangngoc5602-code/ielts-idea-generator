@@ -275,6 +275,9 @@
   @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;} html{scroll-behavior:auto;} }
   :focus-visible{outline:2.5px solid var(--ring);outline-offset:3px;border-radius:8px;}
   @media (max-width:560px){ .wrap{padding:28px 14px 64px;} .support-vi,.subcard{margin-left:0;} .en-line{padding-right:0;} .go.auto{width:100%;} .user-bar .user-email{max-width:108px;} .contact{text-align:left;} }
+  /* Hover: nâng nhẹ thẻ kết quả + bóng sâu + viền sáng (không méo chữ) */
+  .idea,.exam-item{transition:transform .32s var(--ease),box-shadow .32s var(--ease),border-color .32s var(--ease);}
+  .idea:hover,.exam-item:hover{transform:translateY(-4px);box-shadow:0 26px 60px -14px rgba(28,18,70,.7),0 6px 18px rgba(6,6,14,.5);border-color:rgba(123,107,242,.42);}
 </style>
 </head>
 
@@ -991,20 +994,11 @@ async function runScore(){
     }
   }
 
-  /* Viền sáng theo con trỏ trên thẻ .glass + nghiêng 3D nhẹ trên thẻ kết quả */
-  var tilted=null;
+  /* Viền sáng theo con trỏ trên thẻ .glass */
   document.addEventListener("pointermove",function(e){
     if(!e.target||!e.target.closest) return;
     var g=e.target.closest(".glass");
     if(g){ var r=g.getBoundingClientRect(); g.style.setProperty("--mx",(e.clientX-r.left)+"px"); g.style.setProperty("--my",(e.clientY-r.top)+"px"); }
-    if(!fine || !G()) return;
-    var card=e.target.closest(".idea, .exam-item");
-    if(card){
-      if(tilted && tilted!==card) gsap.to(tilted,{rotationX:0,rotationY:0,duration:.5,ease:"power2"});
-      tilted=card; var cr=card.getBoundingClientRect();
-      var rx=(((e.clientY-cr.top)/cr.height)-.5)*-0.6, ry=(((e.clientX-cr.left)/cr.width)-.5)*0.9;
-      gsap.to(card,{rotationX:rx,rotationY:ry,duration:.4,ease:"power2",transformPerspective:1000,transformOrigin:"center"});
-    } else if(tilted){ gsap.to(tilted,{rotationX:0,rotationY:0,duration:.5,ease:"power2"}); tilted=null; }
   },{passive:true});
 
   /* Phản hồi nhẹ khi bấm Copy */
