@@ -1032,8 +1032,10 @@ async function runScore(){
       if(!ov.classList.contains("show")) return;
       var m=ov.querySelector(".modal"); if(!m||!G()) return;
       var r=m.getBoundingClientRect();
-      var ox=lastPt?lastPt.x-(r.left+r.width/2):0, oy=lastPt?lastPt.y-(r.top+r.height/2):0;
-      gsap.fromTo(m,{x:ox,y:oy,scale:.18,autoAlpha:0},{x:0,y:0,scale:1,autoAlpha:1,duration:1.15,ease:"power3.out",clearProps:"transform,opacity"});
+      var ox=lastPt?(lastPt.x-r.left):(r.width/2), oy=lastPt?(lastPt.y-r.top):0;
+      gsap.set(m,{transformOrigin:ox+"px "+oy+"px"});
+      gsap.fromTo(ov,{autoAlpha:0},{autoAlpha:1,duration:.45,ease:"power2.out"});
+      gsap.fromTo(m,{scale:.05,autoAlpha:0},{scale:1,autoAlpha:1,duration:1.05,ease:"power3.out",clearProps:"transform,opacity"});
     });
     mo.observe(ov,{attributes:true,attributeFilter:["class"]});
   });
