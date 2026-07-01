@@ -187,7 +187,7 @@
   .clink .meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.3;} .clink .meta .t{font-weight:700;} .clink .meta .s{font-size:12px;color:var(--ink-muted);font-weight:500;}
 
   /* ĐĂNG NHẬP */
-  .auth-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg-base);}
+  .auth-screen{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:0;background:var(--bg-base);-webkit-overflow-scrolling:touch;}
   .auth-card{max-width:420px;width:100%;padding:34px 28px;text-align:center;}
   .auth-card .brand{display:inline-flex;align-items:center;gap:10px;margin:0 auto 18px;padding:8px 16px 8px 9px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);}
   .auth-card .brand .mark{width:38px;height:38px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(150deg,var(--iris-bright),var(--iris-deep));box-shadow:var(--shadow-iris);}
@@ -315,6 +315,152 @@
   .pl-s:nth-child(6){left:auto;right:15%;animation-delay:.3s;}
   @keyframes circle7124{0%{top:56px;height:5px;border-radius:50px 50px 25px 25px;transform:scaleX(1.7);}40%{height:16px;border-radius:50%;transform:scaleX(1);}100%{top:0%;}}
   @keyframes shadow046{0%{transform:scaleX(1.5);}40%{transform:scaleX(1);opacity:.7;}100%{transform:scaleX(.2);opacity:.4;}}
+
+  /* ============ LANDING (màn đăng nhập) ============ */
+  .la-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .la-bg span{position:absolute;border-radius:50%;will-change:transform;}
+  .la-bg .la-g1{width:92vw;height:82vh;top:-26vh;left:-12vw;background:radial-gradient(closest-side,rgba(123,107,242,.24),transparent 70%);filter:blur(18px);animation:laDrift1 22s ease-in-out infinite alternate;}
+  .la-bg .la-g2{width:64vw;height:64vh;bottom:-22vh;right:-12vw;background:radial-gradient(closest-side,rgba(63,215,164,.10),transparent 70%);animation:laDrift2 27s ease-in-out infinite alternate;}
+  @keyframes laDrift1{to{transform:translate3d(46px,32px,0)}}
+  @keyframes laDrift2{to{transform:translate3d(-40px,-26px,0)}}
+  .la-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");}
+  .la-wrap{position:relative;z-index:2;width:100%;max-width:1080px;margin:0 auto;padding:0 30px 90px;}
+
+  .la-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 0;}
+  .la-top .brand{margin:0;padding:0;}
+  .la-mini{font-size:12.5px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line-2);border-radius:999px;padding:9px 18px;cursor:pointer;transition:background .4s var(--ease),border-color .4s var(--ease),color .4s;}
+  .la-mini:hover{background:rgba(255,255,255,.13);border-color:var(--iris);color:#fff;}
+
+  .la-hero{min-height:90vh;display:flex;flex-direction:column;justify-content:center;padding:30px 0 40px;}
+  .la-kicker{display:inline-flex;align-items:center;gap:11px;align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--iris-bright);margin-bottom:28px;}
+  .la-kicker::before{content:"";width:30px;height:1.5px;background:linear-gradient(90deg,var(--iris),transparent);}
+  .la-hl{font-family:var(--font-body);font-weight:800;font-size:clamp(42px,8vw,110px);line-height:1.08;letter-spacing:-.02em;color:#fff;margin:0;max-width:16ch;}
+  .la-hl .w{display:inline-block;} .la-hl .w>span{display:inline-block;will-change:transform;} .la-hl .w.em>span{color:var(--iris-bright);}
+  .la-lede{font-size:clamp(16px,1.7vw,20px);color:var(--ink-soft);max-width:60ch;line-height:1.72;margin:30px 0 0;}
+  .la-pains{list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 30px;max-width:780px;}
+  .la-pains li{display:flex;align-items:baseline;gap:13px;font-size:15.5px;color:#D7DBEA;padding:14px 0;border-top:1px solid var(--line);}
+  .la-pains li span{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--iris-bright);flex:none;}
+  .la-cta{margin-top:42px;display:flex;flex-direction:column;align-items:flex-start;gap:14px;}
+  .la-msg{font-size:13px;color:var(--danger-soft);min-height:1em;margin:0;}
+  .la-scroll{margin-top:54px;display:flex;align-items:center;gap:13px;color:var(--ink-muted);font-size:12.5px;letter-spacing:.04em;}
+  .la-scroll i{width:22px;height:36px;border:1.5px solid var(--line-2);border-radius:12px;position:relative;flex:none;}
+  .la-scroll i::after{content:"";position:absolute;top:6px;left:50%;width:3px;height:7px;border-radius:2px;background:var(--iris-bright);transform:translateX(-50%);animation:laScroll 1.7s ease-in-out infinite;}
+  @keyframes laScroll{0%{opacity:0;top:6px}30%{opacity:1}60%{opacity:1;top:19px}100%{opacity:0;top:19px}}
+
+  /* Google button */
+  .la-google{position:relative;display:inline-flex;align-items:center;gap:14px;padding:0 8px 0 24px;min-height:60px;border-radius:999px;border:0;cursor:pointer;overflow:hidden;
+    background:#fff;color:#1f2433;font-family:var(--font-body);font-weight:600;font-size:16px;
+    box-shadow:0 14px 44px -10px rgba(123,107,242,.55),0 2px 10px rgba(0,0,0,.4);
+    transition:transform .34s var(--ease-spring),box-shadow .4s var(--ease);}
+  .la-google.pulse{animation:laGlow 2.8s ease-in-out infinite;}
+  .la-google:hover{transform:translateY(-2px);box-shadow:0 20px 54px -10px rgba(123,107,242,.75),0 4px 14px rgba(0,0,0,.5);animation-play-state:paused;}
+  .la-google:active{transform:translateY(0) scale(.98);}
+  .la-google::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(110deg,transparent 22%,rgba(255,255,255,.65) 50%,transparent 78%);transform:translateX(-120%);}
+  .la-google:hover::after{animation:laShine 1s var(--ease);}
+  .la-google .lg-ic{width:26px;height:26px;flex:none;display:grid;place-items:center;}
+  .la-google .lg-ic svg{width:23px;height:23px;}
+  .la-google .lg-tx{white-space:nowrap;}
+  .la-google .lg-ar{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,var(--iris),var(--iris-deep));transition:transform .36s var(--ease-spring);}
+  .la-google .lg-ar svg{width:18px;height:18px;}
+  .la-google:hover .lg-ar{transform:translateX(3px);}
+  .la-google.big{min-height:66px;font-size:17px;}
+  @keyframes laShine{to{transform:translateX(120%)}}
+  @keyframes laGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(123,107,242,0))}50%{filter:drop-shadow(0 0 18px rgba(123,107,242,.55))}}
+
+  /* Feature sections */
+  .la-feat{min-height:76vh;display:flex;align-items:center;gap:clamp(26px,5vw,76px);padding:72px 0;border-top:1px solid var(--line);}
+  .la-num{font-family:var(--font-display);font-weight:800;font-size:clamp(84px,15vw,220px);line-height:.8;color:transparent;-webkit-text-stroke:1.5px rgba(148,134,255,.55);flex:none;}
+  .la-fbody{max-width:640px;}
+  .la-tool{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--iris-bright);background:var(--iris-ghost);border:1px solid rgba(123,107,242,.3);border-radius:999px;padding:6px 15px;margin-bottom:20px;}
+  .la-fhl{font-family:var(--font-display);font-weight:700;font-style:italic;font-size:clamp(26px,3.4vw,42px);line-height:1.22;color:#fff;margin:0 0 18px;}
+  .la-fdesc{font-size:clamp(15px,1.35vw,17px);color:var(--ink-soft);line-height:1.78;margin:0;}
+
+  /* Final */
+  .la-final{min-height:82vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:80px 0 40px;border-top:1px solid var(--line);}
+  .la-final .la-kicker{align-self:center;} .la-final .la-kicker::before{display:none;}
+  .la-final-hl{font-family:var(--font-body);font-weight:800;font-size:clamp(38px,6.4vw,88px);line-height:1.1;letter-spacing:-.02em;color:#fff;margin:0 0 42px;max-width:18ch;}
+  .la-final-hl em{color:var(--iris-bright);font-style:normal;}
+  .la-final-note{margin:22px 0 0;color:var(--ink-muted);font-size:13.5px;}
+
+  /* reveals (bật khi cuộn tới; ẩn chỉ khi JS chạy) */
+  html.la-js .la-reveal .la-num{opacity:0;transform:translateY(42px) scale(.94);transition:opacity 1s var(--ease),transform 1s var(--ease);}
+  html.la-js .la-reveal .la-tool{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease) .08s,transform .8s var(--ease) .08s;}
+  html.la-js .la-reveal .la-fhl{opacity:0;transform:translateY(26px);filter:blur(6px);transition:opacity .9s var(--ease) .16s,transform .9s var(--ease) .16s,filter .9s var(--ease) .16s;}
+  html.la-js .la-reveal .la-fdesc{opacity:0;transform:translateY(22px);transition:opacity .9s var(--ease) .24s,transform .9s var(--ease) .24s;}
+  .la-reveal.in .la-num,.la-reveal.in .la-tool,.la-reveal.in .la-fhl,.la-reveal.in .la-fdesc{opacity:1!important;transform:none!important;filter:none!important;}
+  html.la-js .la-final .la-kicker{opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
+  html.la-js .la-final .la-final-hl{opacity:0;transform:translateY(26px);filter:blur(6px);transition:opacity .9s var(--ease) .1s,transform .9s var(--ease) .1s,filter .9s var(--ease) .1s;}
+  html.la-js .la-final .la-google{opacity:0;transform:translateY(22px);transition:opacity .9s var(--ease) .2s,transform .9s var(--ease) .2s;}
+  html.la-js .la-final .la-final-note{opacity:0;transform:translateY(20px);transition:opacity .9s var(--ease) .28s,transform .9s var(--ease) .28s;}
+  .la-final.in .la-kicker,.la-final.in .la-final-hl,.la-final.in .la-google,.la-final.in .la-final-note{opacity:1!important;transform:none!important;filter:none!important;}
+
+  @media(max-width:760px){.la-feat{flex-direction:column;align-items:flex-start;gap:14px;min-height:auto;padding:56px 0;}}
+  @media(max-width:640px){.la-wrap{padding:0 18px 64px;}.la-hero{min-height:auto;padding:20px 0 44px;}.la-pains{grid-template-columns:1fr;}}
+
+  /* ===== Deck thẻ xoay 3D ===== */
+  .la-deckwrap{position:relative;height:440vh;}
+  .la-deck{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;}
+  .la-deck-kicker{align-self:center;}
+  .la-cards{position:relative;width:min(880px,92vw);height:min(640px,80vh);perspective:1600px;}
+  .la-card{position:absolute;inset:0;overflow:hidden;border-radius:28px;border:1px solid var(--line-2);
+    background:radial-gradient(130% 100% at 50% 0%,#191a26 0%,#101018 60%,#0a0a10 100%);
+    box-shadow:0 34px 90px -24px rgba(18,12,46,.75),inset 0 1px 0 var(--hi);
+    transform-origin:center center;backface-visibility:hidden;will-change:transform,opacity;}
+  .la-card-top{display:flex;align-items:center;gap:16px;}
+  .la-cnum{font-family:var(--font-display);font-weight:800;font-size:clamp(38px,4.6vw,60px);line-height:1;color:transparent;-webkit-text-stroke:1.5px rgba(148,134,255,.6);}
+  .la-ctool{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--iris-bright);background:var(--iris-ghost);border:1px solid rgba(123,107,242,.3);border-radius:999px;padding:6px 15px;}
+  .la-cquote{font-family:var(--font-body);font-weight:700;font-size:clamp(21px,2.5vw,30px);line-height:1.28;letter-spacing:-.01em;color:#fff;margin:2px 0 4px;}
+  .la-cdesc{font-size:clamp(13.5px,1.1vw,15px);color:var(--ink-soft);line-height:1.62;margin:0;}
+  .la-dots{display:flex;gap:9px;}
+  .la-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .45s var(--ease),transform .45s var(--ease);}
+  .la-dots i.on{background:var(--iris-bright);transform:scale(1.4);}
+  html.la-js .la-deckwrap .la-card{opacity:0;}
+  @media(max-width:768px){
+    .la-deckwrap{height:auto;}
+    .la-deck{position:static;height:auto;display:block;padding:16px 0 0;}
+    .la-deck-kicker{align-self:flex-start;}
+    .la-cards{width:100%;height:auto;perspective:none;margin-top:20px;}
+    html.la-js .la-deckwrap .la-card,.la-card{position:relative;inset:auto;opacity:1!important;transform:none!important;margin-bottom:16px;overflow:visible;}
+    .la-dots{display:none;}
+  }
+
+  /* Landing: progress + micro-interactions */
+  #laBar{position:fixed;top:0;left:0;width:100%;height:3px;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,var(--iris-bright),var(--iris));z-index:6;pointer-events:none;box-shadow:0 0 12px var(--iris);}
+  .la-pains li{transition:color .35s var(--ease),border-top-color .35s var(--ease),padding-left .35s var(--ease);}
+  .la-pains li:hover{color:#fff;border-top-color:rgba(123,107,242,.55);padding-left:8px;}
+  .la-pains li:hover span{color:#fff;text-shadow:0 0 12px var(--iris);}
+  .la-dots i{cursor:pointer;}
+  .la-card{transition:border-color .4s var(--ease),box-shadow .4s var(--ease);}
+  .la-card:hover{border-color:rgba(123,107,242,.5);box-shadow:0 40px 100px -24px rgba(60,42,150,.85),inset 0 1px 0 var(--hi);}
+  .la-mini{position:relative;overflow:hidden;}
+  .la-mini::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);transform:translateX(-120%);}
+  .la-mini:hover::after{animation:laShine 1s var(--ease);}
+
+  /* Landing card text: vấn đề (coral) vs giải pháp (khối nổi bật) */
+  .la-problem{color:var(--ink-soft);}
+  .la-problem .pain{color:var(--danger-soft);font-weight:600;}
+  .la-solution{position:relative;margin-top:2px;background:var(--iris-ghost);border:1px solid rgba(123,107,242,.3);border-left:3px solid var(--iris);border-radius:14px;padding:15px 17px;}
+  .la-sol-tag{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--iris-bright);margin-bottom:9px;}
+  .la-sol-tag svg{width:13px;height:13px;flex:none;}
+  .la-solution p{margin:0;color:#ECEEF6;font-size:clamp(13.5px,1.1vw,15px);line-height:1.66;}
+  .la-solution .hi{color:var(--iris-bright);font-weight:600;}
+  .la-solution .hg{color:#fff;font-weight:700;}
+
+  /* Thẻ: nền vũ trụ sao lấp lánh + sao băng */
+  .la-cbody{position:relative;z-index:1;height:100%;overflow:auto;display:flex;flex-direction:column;justify-content:center;gap:13px;padding:clamp(26px,3.8vw,50px);}
+  .la-sky{position:absolute;inset:0;z-index:0;overflow:hidden;border-radius:inherit;pointer-events:none;
+    background-image:radial-gradient(1.2px 1.2px at 82px 242px,rgba(255,255,255,0.84),transparent 60%),radial-gradient(1.5px 1.5px at 18px 210px,rgba(255,255,255,0.71),transparent 60%),radial-gradient(1.5px 1.5px at 14px 232px,rgba(255,255,255,0.57),transparent 60%),radial-gradient(1.1px 1.1px at 111px 107px,rgba(255,255,255,0.59),transparent 60%),radial-gradient(1.8px 1.8px at 108px 15px,rgba(255,255,255,0.61),transparent 60%),radial-gradient(1.6px 1.6px at 57px 161px,rgba(255,255,255,0.98),transparent 60%),radial-gradient(1.4px 1.4px at 147px 149px,rgba(255,255,255,0.99),transparent 60%),radial-gradient(1.9px 1.9px at 11px 142px,rgba(255,255,255,0.68),transparent 60%),radial-gradient(1.1px 1.1px at 36px 138px,rgba(255,255,255,0.69),transparent 60%),radial-gradient(1.2px 1.2px at 208px 174px,rgba(255,255,255,0.81),transparent 60%),radial-gradient(1.4px 1.4px at 163px 48px,rgba(255,255,255,0.8),transparent 60%),radial-gradient(1.1px 1.1px at 16px 144px,rgba(255,255,255,0.64),transparent 60%),radial-gradient(1.4px 1.4px at 174px 136px,rgba(255,255,255,0.69),transparent 60%),radial-gradient(1.5px 1.5px at 149px 236px,rgba(255,255,255,0.68),transparent 60%),radial-gradient(1.7px 1.7px at 203px 46px,rgba(255,255,255,0.66),transparent 60%),radial-gradient(1.5px 1.5px at 147px 76px,rgba(255,255,255,0.94),transparent 60%),radial-gradient(1.3px 1.3px at 186px 114px,rgba(255,255,255,0.99),transparent 60%),radial-gradient(1.4px 1.4px at 30px 131px,rgba(255,255,255,0.89),transparent 60%);background-size:250px 250px;background-repeat:repeat;animation:twk1 4.2s ease-in-out infinite;}
+  .la-sky::before{content:"";position:absolute;inset:0;background-image:radial-gradient(1.8px 1.8px at 38px 250px,rgba(185,195,255,0.98),transparent 60%),radial-gradient(2.2px 2.2px at 142px 293px,rgba(185,195,255,0.93),transparent 60%),radial-gradient(2.0px 2.0px at 89px 254px,rgba(255,255,255,0.78),transparent 60%),radial-gradient(2.1px 2.1px at 69px 242px,rgba(255,255,255,0.63),transparent 60%),radial-gradient(2.4px 2.4px at 79px 295px,rgba(185,195,255,0.93),transparent 60%),radial-gradient(1.4px 1.4px at 98px 177px,rgba(185,195,255,0.78),transparent 60%),radial-gradient(1.5px 1.5px at 29px 252px,rgba(185,195,255,0.91),transparent 60%),radial-gradient(1.8px 1.8px at 63px 203px,rgba(185,195,255,0.95),transparent 60%),radial-gradient(1.9px 1.9px at 114px 205px,rgba(255,255,255,0.95),transparent 60%),radial-gradient(2.1px 2.1px at 140px 142px,rgba(255,255,255,0.99),transparent 60%),radial-gradient(1.6px 1.6px at 97px 118px,rgba(185,195,255,0.67),transparent 60%);background-size:200px 300px;background-repeat:repeat;animation:twk2 5.6s ease-in-out infinite;}
+  .la-sky::after{content:"";position:absolute;inset:0;background-image:radial-gradient(1.1px 1.1px at 119px 3px,rgba(255,255,255,0.54),transparent 60%),radial-gradient(0.8px 0.8px at 134px 72px,rgba(255,255,255,0.47),transparent 60%),radial-gradient(1.1px 1.1px at 189px 156px,rgba(255,255,255,0.68),transparent 60%),radial-gradient(1.2px 1.2px at 263px 158px,rgba(255,255,255,0.6),transparent 60%),radial-gradient(1.4px 1.4px at 233px 199px,rgba(255,255,255,0.57),transparent 60%),radial-gradient(1.0px 1.0px at 286px 100px,rgba(255,255,255,0.46),transparent 60%),radial-gradient(1.0px 1.0px at 246px 162px,rgba(255,255,255,0.38),transparent 60%),radial-gradient(0.9px 0.9px at 106px 112px,rgba(255,255,255,0.44),transparent 60%),radial-gradient(0.8px 0.8px at 26px 26px,rgba(255,255,255,0.36),transparent 60%),radial-gradient(1.2px 1.2px at 51px 93px,rgba(255,255,255,0.33),transparent 60%),radial-gradient(1.0px 1.0px at 106px 157px,rgba(255,255,255,0.55),transparent 60%),radial-gradient(1.0px 1.0px at 177px 154px,rgba(255,255,255,0.35),transparent 60%),radial-gradient(1.1px 1.1px at 249px 119px,rgba(255,255,255,0.42),transparent 60%),radial-gradient(1.2px 1.2px at 73px 26px,rgba(255,255,255,0.6),transparent 60%);background-size:320px 220px;background-repeat:repeat;animation:twk3 7s ease-in-out infinite;}
+  @keyframes twk1{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes twk2{0%,100%{opacity:1}50%{opacity:.42}}
+  @keyframes twk3{0%,100%{opacity:.7}45%{opacity:.28}}
+  .la-sky .shoot{position:absolute;top:12%;left:-16%;width:120px;height:2px;border-radius:2px;transform:rotate(16deg);opacity:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.15) 35%,#fff);filter:drop-shadow(0 0 6px rgba(180,195,255,.9));animation:shoot 7.5s ease-in infinite;}
+  @keyframes shoot{0%{opacity:0;transform:translate3d(0,0,0) rotate(16deg)}4%{opacity:1}15%{opacity:0;transform:translate3d(480px,150px,0) rotate(16deg)}100%{opacity:0;transform:translate3d(480px,150px,0) rotate(16deg)}}
+  .la-cards .la-card:nth-child(2) .shoot{animation-delay:2.6s;top:26%}
+  .la-cards .la-card:nth-child(3) .shoot{animation-delay:5s;top:8%}
+  .la-cards .la-card:nth-child(4) .shoot{animation-delay:1.4s;top:32%}
 </style>
 </head>
 
@@ -326,32 +472,85 @@
 
   <!-- MÀN ĐĂNG NHẬP (Giai đoạn 1): che toàn bộ app cho tới khi đăng nhập đúng tài khoản trong danh sách -->
   <div id="authScreen" class="auth-screen">
-    <div class="auth-card glass">
-      <div class="brand">
-        <span class="mark" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
-        <span class="name">IELTS Writing Hub</span>
+    <div id="laBar" aria-hidden="true"></div>
+    <div class="la-bg" aria-hidden="true"><span class="la-g1"></span><span class="la-g2"></span></div>
+    <div class="la-grain" aria-hidden="true"></div>
+    <div class="la-wrap">
+      <header class="la-top">
+        <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20s2-9 8-13c4-2.6 8-2 8-2s.6 4-2 8c-4 6-13 8-13 8z"/><path d="M4 20c2-4 5-7 9-9"/></svg></span><span class="name">IELTS Writing Hub</span></div>
+        <button class="la-mini" onclick="signInGoogle()">Đăng nhập</button>
+      </header>
+
+      <section class="la-hero">
+        <span class="la-kicker">IELTS Writing · Task 2</span>
+        <h1 class="la-hl"><span class="w"><span>Đừng</span></span> <span class="w"><span>để</span></span> <span class="w"><span>band</span></span> <span class="w em"><span>dậm</span></span> <span class="w em"><span>chân</span></span> <span class="w em"><span>tại</span></span> <span class="w em"><span>chỗ.</span></span></h1>
+        <p class="la-lede">Task 2 không khó vì bạn kém — nó khó vì mấy cái "lỗi quốc dân" mà ai cũng dính. Trang này sinh ra để xử gọn đúng những chỗ đó.</p>
+        <ul class="la-pains">
+          <li><span>01</span>Nhìn đề mà não trắng xóa</li>
+          <li><span>02</span>Viết mãi một kiểu câu</li>
+          <li><span>03</span>Tự chấm thì mù tịt, không biết mấy chấm</li>
+          <li><span>04</span>Đề thi không biết luyện ở đâu</li>
+        </ul>
+        <div class="la-cta">
+          <button class="la-google pulse" onclick="signInGoogle()"><span class="lg-ic"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg></span><span class="lg-tx">Đăng nhập bằng Google</span><span class="lg-ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+          <p class="la-msg" id="authMsg"></p>
+        </div>
+        <div class="la-scroll" aria-hidden="true"><span>Cuộn xem tớ giúp được gì</span><i></i></div>
+      </section>
+
+    <section class="la-deckwrap">
+      <div class="la-deck">
+        <div class="la-cards">
+        <article class="la-card">
+          <div class="la-sky" aria-hidden="true"><i class="shoot"></i></div>
+          <div class="la-cbody">
+            <div class="la-card-top"><span class="la-cnum">01</span><span class="la-ctool">Tìm ý tưởng</span></div>
+            <h2 class="la-cquote">"Ét ô ét, mình không nghĩ ra gì để viết"</h2>
+            <p class="la-cdesc la-problem">Ai học Task 2 cũng từng ngồi <b class="pain">thần ra 10 phút</b>, đề đọc hiểu hết mà <b class="pain">đầu vẫn trống trơn</b> — nhất là mấy topic trời ơi như government spending, history hay space, tiếng Việt còn chưa nghĩ ra ý, nói gì tiếng Anh. Hết giờ mà <b class="pain">body vẫn chưa có nổi một luận điểm cho ra hồn</b>.</p>
+            <div class="la-solution"><span class="la-sol-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-5.3 1.8L12 18l-2.2-6.2L4.5 10l6.3-1.7z"/></svg>Giải pháp</span><p>Tính năng tìm ý tưởng là <b class="hi">"máy bơm chất xám"</b> của bạn: gõ đề vào, tớ order Grab ship ngay <b class="hi">dàn ý sạch đẹp, chuẩn form lập luận band cao</b> mà còn tặng kèm <b class="hg">từ vựng hay theo từng ý tưởng</b> — vừa học từ vừa học ý, tha hồ <b class="hg">nhét thẳng vào 2 body paragraph</b>. Không lan man, không dư thừa, chuẩn khung để viết. Nếu bạn tra trên Google? Cũng được, nhưng bạn vẫn phải tự lần mò từ vựng phù hợp và cách triển khai sao cho hợp lý, thế thì chán chết :(</p></div>
+          </div>
+        </article>
+        <article class="la-card">
+          <div class="la-sky" aria-hidden="true"><i class="shoot"></i></div>
+          <div class="la-cbody">
+            <div class="la-card-top"><span class="la-cnum">02</span><span class="la-ctool">Đề thi thật</span></div>
+            <h2 class="la-cquote">"Luyện mà cứ bí đề, search Google toàn ra đề từ đời nào"</h2>
+            <p class="la-cdesc la-problem">Muốn luyện đều tay nhưng kiếm đề mới mệt phết: Google thì ra mấy <b class="pain">đề cũ mèm, trùng đi trùng lại</b>, chẳng biết cái nào sát format thi thật. Thế là luyện lung tung, hôm có đề hôm không, <b class="pain">tiến bộ kiểu hên xui</b>.</p>
+            <div class="la-solution"><span class="la-sol-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-5.3 1.8L12 18l-2.2-6.2L4.5 10l6.3-1.7z"/></svg>Giải pháp</span><p>Đề thi biến bạn thành người sở hữu nguyên <b class="hi">"ngân hàng đề" cá nhân</b>: bấm một cái là có đề luyện tập <b class="hi">chuẩn format, đa dạng chủ đề</b>, lại <b class="hg">cực kỳ sát và được update thường xuyên</b> từ những nguồn uy tín nhất, bao gồm cả các pháp sư trung hoa như <b class="hg">IELTS bro hay laokaoya</b>.</p></div>
+          </div>
+        </article>
+        <article class="la-card">
+          <div class="la-sky" aria-hidden="true"><i class="shoot"></i></div>
+          <div class="la-cbody">
+            <div class="la-card-top"><span class="la-cnum">03</span><span class="la-ctool">Paraphrase</span></div>
+            <h2 class="la-cquote">"Viết đi viết lại đúng một kiểu, còn hay lặp nguyên chữ trong đề"</h2>
+            <p class="la-cdesc la-problem">Vốn từ, diễn đạt có hạn nên <b class="pain">câu nào cũng na ná câu nào</b>, bí quá thì bê nguyên cụm trong đề bài vào, mà đây đúng là <b class="pain">cái bẫy kinh điển kéo tụt điểm Lexical Resource và GRA</b>. Biết là câu mình còn "quê" và cứ đểu đểu sao ý nhưng chịu, không biết nâng lên kiểu gì cho sang.</p>
+            <div class="la-solution"><span class="la-sol-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-5.3 1.8L12 18l-2.2-6.2L4.5 10l6.3-1.7z"/></svg>Giải pháp</span><p>Paraphrase là <b class="hi">gia sư riêng chuyên "lên đời" câu chữ</b>: đưa câu/đoạn/cả bài vào, <b class="hi">chọn band mục tiêu</b>, nó viết lại đúng tầm đó và <b class="hg">giải thích theo 4 tiêu chí</b> để bạn hiểu vì sao nó xịn hơn. Không chỉ đưa đáp án — nó <b class="hg">dạy bạn cách tự nâng</b>, để lần sau tự flex chứ không phải đi mượn.</p></div>
+          </div>
+        </article>
+        <article class="la-card">
+          <div class="la-sky" aria-hidden="true"><i class="shoot"></i></div>
+          <div class="la-cbody">
+            <div class="la-card-top"><span class="la-cnum">04</span><span class="la-ctool">Chấm điểm</span></div>
+            <h2 class="la-cquote">"Viết xong mà chả biết mình mấy band"</h2>
+            <p class="la-cdesc la-problem">Đây là nỗi đau real nhất: viết xong bài xong <b class="pain">ngồi đoán mò, không ai chấm</b>, mà chờ giáo viên sửa thì <b class="pain">cả tuần mới có phản hồi, hoặc đắt</b> :(. Nhờ AI khác chấm thì không yên tâm. Tự chấm thì mù mờ, <b class="pain">chẳng biết mình yếu ở đâu mà sửa</b>, cứ thế viết sai hoài mà không hay.</p>
+            <div class="la-solution"><span class="la-sol-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-5.3 1.8L12 18l-2.2-6.2L4.5 10l6.3-1.7z"/></svg>Giải pháp</span><p>Chấm điểm chính là <b class="hi">giám khảo IELTS bỏ túi, online 24/7</b>: nộp bài là <b class="hi">chấm ngay theo đúng 4 tiêu chí TR – CC – LR – GRA</b>, kèm tổng kết <b class="hg">chỉ tận tay cách lên band</b>. Yên tâm nhé, tớ có đầy đủ và <b class="hg">hiểu rõ tiêu chí chấm của giám khảo</b>, không chỉ là cái bảng chung chung band descriptors mà ai cũng có đâu. Bao uy tín, thề :)))</p></div>
+          </div>
+        </article>
+        </div>
+        <div class="la-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       </div>
-      <h2 class="auth-title">Đăng nhập để bắt đầu</h2>
-      <p class="auth-sub" id="authMsg">Công cụ dành cho học viên đã đăng ký. Đăng nhập bằng Google để vào học nhé.</p>
-      <button class="go full auth-google" onclick="signInGoogle()">
-        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
-        <span>Đăng nhập bằng Google</span>
-      </button>
-      <p class="auth-note">Chưa có quyền truy cập, hoặc cần hỗ trợ? Nhắn mình để được thêm vào lớp nhé:</p>
-      <div class="auth-contact">
-        <a class="auth-clink" href="https://zalo.me/0384891173" target="_blank" rel="noopener" aria-label="Liên hệ Zalo 0384 891 173">
-          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg></span>
-          <span class="meta"><span class="t">Zalo</span><span class="s">0384 891 173</span></span>
-        </a>
-        <a class="auth-clink" href="https://web.facebook.com/ngoc.hoang.961112" target="_blank" rel="noopener" aria-label="Facebook">
-          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>
-          <span class="meta"><span class="t">Facebook</span><span class="s">ngoc.hoang.961112</span></span>
-        </a>
-      </div>
+    </section>
+
+      <section class="la-final la-reveal">
+        <span class="la-kicker">Sẵn sàng chưa?</span>
+        <h2 class="la-final-hl">Bớt loay hoay. <em>Bắt đầu bứt band.</em></h2>
+        <button class="la-google pulse big" onclick="signInGoogle()"><span class="lg-ic"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg></span><span class="lg-tx">Đăng nhập bằng Google</span><span class="lg-ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        <p class="la-final-note">Đăng nhập bằng Google trong 5 giây — rồi học thôi.</p>
+      </section>
     </div>
   </div>
 
-  <!-- Thanh người dùng: hiện sau khi đăng nhập -->
   <div id="userBar" class="user-bar">
     <span class="user-dot" aria-hidden="true"></span>
     <span id="userEmail" class="user-email"></span>
@@ -1075,6 +1274,91 @@ async function runScore(){
   curtain();
   window.addEventListener("resize",function(){ moveTabLine(false); });
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ moveTabLine(false); if(window.ScrollTrigger){ try{ ScrollTrigger.refresh(); }catch(e){} } });
+})();
+
+
+/* ===== LANDING motion (parallax + coverflow + micro-interactions + kinetic) ===== */
+(function(){
+  var scr=document.getElementById("authScreen"); if(!scr) return;
+  document.documentElement.classList.add("la-js");
+  var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var canG=window.gsap&&!reduce;
+  var desk=window.matchMedia&&window.matchMedia("(min-width:769px)").matches;
+
+  // Kinetic hero intro
+  if(canG){
+    var tl=gsap.timeline({defaults:{ease:"power3.out"}});
+    tl.from(".la-top",{y:-14,autoAlpha:0,duration:.6})
+      .from(".la-hero .la-kicker",{y:16,autoAlpha:0,duration:.5},"-=.2")
+      .from(".la-hl .w>span",{yPercent:120,autoAlpha:0,rotationZ:3,stagger:.05,duration:.85},"-=.15")
+      .from(".la-lede",{y:18,autoAlpha:0,duration:.6},"-=.4")
+      .from(".la-pains li",{x:-20,autoAlpha:0,stagger:.08,duration:.55},"-=.3")
+      .from(".la-cta",{y:18,autoAlpha:0,duration:.6},"-=.25")
+      .from(".la-scroll",{autoAlpha:0,duration:.5},"-=.1");
+  }
+
+  // Final reveal
+  var finals=scr.querySelectorAll(".la-reveal");
+  if(reduce||!("IntersectionObserver" in window)){ finals.forEach(function(e){e.classList.add("in");}); }
+  else { var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}});},{root:scr,threshold:.25}); finals.forEach(function(e){io.observe(e);}); }
+
+  var bar=document.getElementById("laBar");
+  var hero=scr.querySelector(".la-hero");
+  var wrap=scr.querySelector(".la-deckwrap");
+  var cards=[].slice.call(scr.querySelectorAll(".la-card"));
+  var dots=[].slice.call(scr.querySelectorAll(".la-dots i"));
+  var deckOn=wrap&&cards.length&&desk&&!reduce;
+  if(!deckOn){ cards.forEach(function(c){ c.style.opacity=1; c.style.transform="none"; }); }
+
+  var cw=880;
+  function measure(){ if(cards[0]) cw=cards[0].offsetWidth||880; }
+  var lastAct=-1;
+  function layout(){
+    var st=scr.scrollTop, ch=scr.clientHeight, sh=scr.scrollHeight-ch;
+    if(bar) bar.style.transform="scaleX("+(sh>0?Math.min(1,st/sh):0)+")";
+    if(hero&&desk&&!reduce){ var t=st>900?900:st; hero.style.transform="translate3d(0,"+(t*0.16)+"px,0)"; hero.style.opacity=String(Math.max(0,1-t/760)); }
+    if(deckOn){
+      var sr=scr.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+      var denom=wrap.offsetHeight-ch; if(denom<1)denom=1;
+      var p=(sr.top-wr.top)/denom; if(p<0)p=0; if(p>1)p=1;
+      var af=p*(cards.length-1);
+      for(var i=0;i<cards.length;i++){
+        var d=i-af, ad=d<0?-d:d;
+        var op= ad>1.15?0:(ad>0.82?(1.15-ad)/0.33:1);
+        var cl=d<-1?-1:(d>1?1:d);
+        var ry=cl*-22;
+        var sc=1-(ad>1.4?1.4:ad)*0.13;
+        var tx=d*cw*0.92;
+        var tz=-(ad>2?2:ad)*170;
+        var c=cards[i];
+        c.style.opacity=op;
+        c.style.transform="translate3d("+tx+"px,0,"+tz+"px) rotateY("+ry+"deg) scale("+sc+")";
+        c.style.zIndex=String(100-Math.round(ad*10));
+        c.style.pointerEvents= ad<0.5?"auto":"none";
+      }
+      var act=Math.round(af);
+      if(act!==lastAct){
+        lastAct=act;
+        for(var j=0;j<dots.length;j++) dots[j].classList.toggle("on",j===act);
+        if(canG&&cards[act]){ var q=cards[act].querySelector(".la-cquote"); if(q) gsap.fromTo(q,{y:14,autoAlpha:.25},{y:0,autoAlpha:1,duration:.5,ease:"power3.out"}); }
+      }
+    }
+  }
+  var ticking=false;
+  scr.addEventListener("scroll",function(){ if(!ticking){ ticking=true; requestAnimationFrame(function(){ ticking=false; layout(); }); } },{passive:true});
+  window.addEventListener("resize",function(){ measure(); requestAnimationFrame(layout); });
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ measure(); requestAnimationFrame(layout); });
+
+  // dots -> nhảy tới thẻ (micro-interaction)
+  if(deckOn){
+    dots.forEach(function(dt,i){ dt.addEventListener("click",function(){
+      var sr=scr.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+      var denom=wrap.offsetHeight-scr.clientHeight; if(denom<1)denom=1;
+      var base=scr.scrollTop+(wr.top-sr.top);
+      scr.scrollTo({top:base+(i/(cards.length-1))*denom, behavior:"smooth"});
+    }); });
+  }
+  measure(); layout();
 })();
 
 </script>
