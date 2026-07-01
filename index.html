@@ -276,11 +276,10 @@
 
   /* ==== user-bar icon buttons (mở rộng khi rê) ==== */
   .user-bar .ib{display:inline-flex;align-items:center;height:34px;padding:0 9px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.05);color:var(--ink-soft);cursor:pointer;overflow:hidden;max-width:36px;transition:max-width 1.15s var(--ease),background .6s var(--ease),color .6s var(--ease),border-color .6s var(--ease);}
-  .user-bar .ib svg{width:17px;height:17px;flex:none;transform:translateX(3px);transition:transform 1.15s var(--ease);}
+  .user-bar .ib svg{width:17px;height:17px;flex:none;}
   .user-bar .ib .ib-lbl{white-space:nowrap;font-size:12.5px;font-weight:600;padding-left:7px;opacity:0;transform:translateX(8px);transition:opacity 1.15s var(--ease),transform 1.15s var(--ease);}
   .user-bar .ib:hover,.user-bar .ib:focus-visible{max-width:220px;background:rgba(255,255,255,.12);color:#fff;border-color:var(--iris);}
   .user-bar .ib:hover .ib-lbl,.user-bar .ib:focus-visible .ib-lbl{opacity:1;transform:translateX(0);}
-  .user-bar .ib:hover svg,.user-bar .ib:focus-visible svg{transform:translateX(0);}
   .user-bar .ib.danger:hover,.user-bar .ib.danger:focus-visible{border-color:var(--danger);background:rgba(255,122,147,.16);}
 
   /* ==== nút Mua: hiệu ứng giỏ hàng trượt vào ==== */
@@ -346,7 +345,7 @@
     <span class="user-dot" aria-hidden="true"></span>
     <span id="userEmail" class="user-email"></span>
     <button class="ib" onclick="openMe()" title="Tài khoản & lượt còn lại" aria-label="Tài khoản"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="userPlan" class="ib-lbl"></span></button>
-    <button class="ib" onclick="openPlans()" title="Xem các gói" aria-label="Gói"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 11l-5.6 1.9L12 18.5l-1.9-5.6L4.5 11l5.6-1.9z"/></svg><span class="ib-lbl">Gói</span></button>
+    <button class="ib" onclick="openPlans()" title="Xem các gói" aria-label="Gói"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="ib-lbl">Gói</span></button>
     <button class="ib danger" onclick="signOutUser()" title="Đăng xuất" aria-label="Đăng xuất"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="ib-lbl">Đăng xuất</span></button>
   </div>
 
