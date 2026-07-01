@@ -275,11 +275,12 @@
   .idea:hover,.exam-item:hover{transform:translateY(-4px);box-shadow:0 26px 60px -14px rgba(28,18,70,.7),0 6px 18px rgba(6,6,14,.5);border-color:rgba(123,107,242,.42);}
 
   /* ==== user-bar icon buttons (mở rộng khi rê) ==== */
-  .user-bar .ib{display:inline-flex;align-items:center;height:34px;padding:0 8px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.05);color:var(--ink-soft);cursor:pointer;overflow:hidden;max-width:38px;transition:max-width 1.15s var(--ease),background .5s var(--ease),color .5s var(--ease),border-color .5s var(--ease);}
-  .user-bar .ib svg{width:17px;height:17px;flex:none;}
-  .user-bar .ib .ib-lbl{white-space:nowrap;font-size:12.5px;font-weight:600;opacity:0;max-width:0;transition:opacity .6s var(--ease) .22s,max-width 1.15s var(--ease),margin .6s var(--ease) .1s;}
+  .user-bar .ib{display:inline-flex;align-items:center;height:34px;padding:0 9px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.05);color:var(--ink-soft);cursor:pointer;overflow:hidden;max-width:36px;transition:max-width 1.15s var(--ease),background .6s var(--ease),color .6s var(--ease),border-color .6s var(--ease);}
+  .user-bar .ib svg{width:17px;height:17px;flex:none;transform:translateX(3px);transition:transform 1.15s var(--ease);}
+  .user-bar .ib .ib-lbl{white-space:nowrap;font-size:12.5px;font-weight:600;padding-left:7px;opacity:0;transform:translateX(8px);transition:opacity 1.15s var(--ease),transform 1.15s var(--ease);}
   .user-bar .ib:hover,.user-bar .ib:focus-visible{max-width:220px;background:rgba(255,255,255,.12);color:#fff;border-color:var(--iris);}
-  .user-bar .ib:hover .ib-lbl,.user-bar .ib:focus-visible .ib-lbl{opacity:1;max-width:170px;margin-left:7px;}
+  .user-bar .ib:hover .ib-lbl,.user-bar .ib:focus-visible .ib-lbl{opacity:1;transform:translateX(0);}
+  .user-bar .ib:hover svg,.user-bar .ib:focus-visible svg{transform:translateX(0);}
   .user-bar .ib.danger:hover,.user-bar .ib.danger:focus-visible{border-color:var(--danger);background:rgba(255,122,147,.16);}
 
   /* ==== nút Mua: hiệu ứng giỏ hàng trượt vào ==== */
