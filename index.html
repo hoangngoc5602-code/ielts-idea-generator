@@ -304,6 +304,17 @@
 
   /* căn đều tiêu đề gói */
   .plan-card .pname{line-height:1.35;} .plan-card .price{line-height:1.15;}
+  /* 3 chấm nảy — loading trong popup */
+  .pop-loading{display:flex;align-items:center;justify-content:center;min-height:130px;}
+  .pl-wrap{width:120px;height:56px;position:relative;}
+  .pl-c{width:16px;height:16px;position:absolute;border-radius:50%;background:#fff;left:15%;transform-origin:50%;animation:circle7124 .5s alternate infinite ease;}
+  .pl-c:nth-child(2){left:45%;animation-delay:.2s;}
+  .pl-c:nth-child(3){left:auto;right:15%;animation-delay:.3s;}
+  .pl-s{width:16px;height:4px;border-radius:50%;background:rgba(0,0,0,.5);position:absolute;top:56px;transform-origin:50%;z-index:-1;left:15%;filter:blur(1px);animation:shadow046 .5s alternate infinite ease;}
+  .pl-s:nth-child(5){left:45%;animation-delay:.2s;}
+  .pl-s:nth-child(6){left:auto;right:15%;animation-delay:.3s;}
+  @keyframes circle7124{0%{top:56px;height:5px;border-radius:50px 50px 25px 25px;transform:scaleX(1.7);}40%{height:16px;border-radius:50%;transform:scaleX(1);}100%{top:0%;}}
+  @keyframes shadow046{0%{transform:scaleX(1.5);}40%{transform:scaleX(1);opacity:.7;}100%{transform:scaleX(.2);opacity:.4;}}
 </style>
 </head>
 
@@ -580,8 +591,11 @@ function openPlans(explain){
 }
 function closePlans(){ const m=document.getElementById("plansModal"); if(m) m.classList.remove("show"); }
 async function openMe(){
+  const body=document.getElementById("meBody");
+  if(body) body.innerHTML='<div class="pop-loading"><div class="pl-wrap"><div class="pl-c"></div><div class="pl-c"></div><div class="pl-c"></div><div class="pl-s"></div><div class="pl-s"></div><div class="pl-s"></div></div></div>';
+  const m0=document.getElementById("meModal"); if(m0) m0.classList.add("show");
   await fetchStatus();
-  const s=MYSTATUS||{}, body=document.getElementById("meBody");
+  const s=MYSTATUS||{};
   if(body){
     const d=v=>v?new Date(v).toLocaleDateString("vi-VN"):"—";
     const paid=(s.plan==="standard"||s.plan==="pro");
@@ -607,7 +621,6 @@ async function openMe(){
     }
     body.innerHTML=h;
   }
-  const m=document.getElementById("meModal"); if(m) m.classList.add("show");
 }
 function closeMe(){ const m=document.getElementById("meModal"); if(m) m.classList.remove("show"); }
 /* Thông điệp khi hết lượt — riêng cho từng tính năng */
@@ -1020,7 +1033,7 @@ async function runScore(){
       var m=ov.querySelector(".modal"); if(!m||!G()) return;
       var r=m.getBoundingClientRect();
       var ox=lastPt?lastPt.x-(r.left+r.width/2):0, oy=lastPt?lastPt.y-(r.top+r.height/2):0;
-      gsap.fromTo(m,{x:ox,y:oy,scale:.25,autoAlpha:0},{x:0,y:0,scale:1,autoAlpha:1,duration:.72,ease:"power3.out",clearProps:"transform,opacity"});
+      gsap.fromTo(m,{x:ox,y:oy,scale:.18,autoAlpha:0},{x:0,y:0,scale:1,autoAlpha:1,duration:1.15,ease:"power3.out",clearProps:"transform,opacity"});
     });
     mo.observe(ov,{attributes:true,attributeFilter:["class"]});
   });
