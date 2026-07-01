@@ -206,9 +206,11 @@
   .auth-clink .meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;}
   .auth-clink .meta .t{font-weight:700;font-size:13px;}
   .auth-clink .meta .s{font-size:11.5px;color:var(--ink-soft);}
-  .user-bar{position:fixed;top:16px;right:16px;z-index:55;display:none;align-items:center;gap:9px;padding:0;background:none;border:0;box-shadow:none;}
+  .user-bar{position:fixed;top:14px;right:14px;z-index:55;display:none;align-items:center;gap:9px;
+    background:rgba(18,19,27,.7);border:1px solid var(--line-2);border-radius:999px;padding:7px 8px 7px 14px;
+    -webkit-backdrop-filter:blur(var(--blur)) saturate(150%);backdrop-filter:blur(var(--blur)) saturate(150%);box-shadow:var(--shadow-1);}
   .user-bar .user-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);flex:none;}
-  .user-bar .user-email{font-size:12.5px;color:var(--ink-soft);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(6,7,13,.8);}
+  .user-bar .user-email{font-size:12.5px;color:var(--ink-soft);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .user-bar .user-logout{font-size:12.5px;font-weight:600;color:#fff;background:linear-gradient(180deg,var(--iris),var(--iris-deep));border:0;border-radius:999px;padding:7px 13px;min-height:32px;}
   .user-bar .user-logout:hover{filter:brightness(1.08);} .user-bar .user-logout:active{transform:scale(.96);}
   .user-plan{font-size:11px;font-weight:700;letter-spacing:.05em;color:#0C0C12;background:linear-gradient(180deg,var(--iris-bright),var(--iris));border:1px solid transparent;border-radius:999px;padding:5px 10px;cursor:pointer;}
@@ -997,7 +999,6 @@ async function runScore(){
       gsap.to(".aurora .a1",{x:50,y:36,duration:16,ease:"sine.inOut",repeat:-1,yoyo:true});
       gsap.to(".aurora .a2",{x:-44,y:-30,duration:20,ease:"sine.inOut",repeat:-1,yoyo:true});
       gsap.to(".aurora .a3",{x:36,y:-34,duration:24,ease:"sine.inOut",repeat:-1,yoyo:true});
-      gsap.to(".aurora",{yPercent:14,ease:"none",scrollTrigger:{start:0,end:"max",scrub:true}});
       var hero=document.querySelector("header");
       if(hero) gsap.to(hero,{yPercent:-5,autoAlpha:.6,ease:"none",scrollTrigger:{trigger:hero,start:"top top",end:"bottom top",scrub:true}});
     }catch(e){}
