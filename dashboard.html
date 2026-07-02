@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<title>IELTS Writing Hub — Báo cáo kinh doanh (admin)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font:"Be Vietnam Pro",system-ui,sans-serif; --disp:"Playfair Display",Georgia,serif;
+    --ink:#0B0C10; --s1:#15161E; --s2:#1B1D27; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --tx:#F4F4F8; --tx2:#AAB0C0; --tx3:#787E92;
+    --iris:#7B6BF2; --iris2:#9486FF; --green:#3FD7A4; --amber:#F2C261; --coral:#FF7A93;
+    --r:16px; --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;font-family:var(--font);color:var(--tx);line-height:1.55;-webkit-font-smoothing:antialiased;
+    background:radial-gradient(1000px 600px at 15% -10%,rgba(123,107,242,.14),transparent 60%),var(--ink);}
+  a{color:var(--iris2)}
+  .wrap{max-width:1260px;margin:0 auto;padding:22px 22px 80px;}
+
+  /* Auth gate */
+  #gate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:24px;background:var(--ink);}
+  #gate.show{display:flex}
+  .gate-card{max-width:420px;width:100%;background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--line2);border-radius:22px;padding:34px 28px;text-align:center;box-shadow:0 30px 80px -24px rgba(18,12,46,.7);}
+  .gate-card h1{font-family:var(--disp);font-size:24px;margin:0 0 8px}
+  .gate-card p{color:var(--tx2);font-size:14px;margin:0 0 22px}
+  .gbtn{display:inline-flex;align-items:center;gap:12px;background:#fff;color:#1f2433;border:0;border-radius:999px;padding:13px 22px;font-family:var(--font);font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 12px 34px -10px rgba(123,107,242,.5);transition:transform .2s var(--ease),filter .2s}
+  .gbtn:hover{transform:translateY(-1px);filter:brightness(.98)} .gbtn svg{width:20px;height:20px}
+  .gate-msg{margin-top:16px;font-size:13px;color:var(--coral)}
+
+  /* Topbar */
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .top h1{font-family:var(--disp);font-size:clamp(20px,2.4vw,28px);margin:0;font-weight:800;letter-spacing:-.01em}
+  .top .sp{flex:1}
+  .ctrl{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--tx2)}
+  .ctrl input{width:78px;background:transparent;border:0;color:var(--tx);font-family:var(--font);font-size:13px;text-align:right;outline:none}
+  .btn{background:rgba(255,255,255,.06);border:1px solid var(--line2);color:var(--tx);border-radius:999px;padding:8px 14px;font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer;transition:background .25s,border-color .25s}
+  .btn:hover{background:rgba(255,255,255,.13);border-color:var(--iris)}
+  .btn.p{background:linear-gradient(180deg,var(--iris),#5847C9);border-color:transparent;color:#fff}
+  .muted{color:var(--tx3);font-size:12px}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:20px}
+  .kpi{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--line);border-radius:var(--r);padding:18px 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  .kpi .lbl{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3)}
+  .kpi .val{font-family:var(--disp);font-size:30px;font-weight:800;margin:8px 0 2px;line-height:1}
+  .kpi .sub{font-size:12.5px;color:var(--tx2)}
+  .kpi .sub b{color:var(--tx)}
+  .val.green{color:var(--green)} .val.coral{color:var(--coral)} .val.iris{color:var(--iris2)}
+
+  /* Panels */
+  .grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .panel{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .panel h2{font-size:14px;font-weight:700;margin:0 0 14px;color:var(--tx)}
+  .panel h2 small{color:var(--tx3);font-weight:500;font-size:12px}
+  .chartbox{position:relative;height:300px}
+  .chartbox.sm{height:260px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--tx3);font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tablewrap{max-height:360px;overflow:auto}
+  tr:hover td{background:rgba(255,255,255,.03)}
+  .pos{color:var(--green)} .neg{color:var(--coral)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--iris-ghost,rgba(123,107,242,.16));color:var(--iris2);border:1px solid rgba(123,107,242,.3)}
+  .warn{color:var(--amber)}
+  #err{display:none;margin:14px 0;padding:12px 16px;border-radius:12px;background:rgba(255,122,147,.12);border:1px solid rgba(255,122,147,.35);color:#FFA9BB;font-size:14px}
+  #err.show{display:block}
+  .foot{margin-top:18px;color:var(--tx3);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+  <!-- Cổng đăng nhập admin -->
+  <div id="gate" class="show">
+    <div class="gate-card">
+      <h1>Báo cáo kinh doanh</h1>
+      <p>Khu vực dành riêng cho admin. Đăng nhập bằng Google để xem số liệu.</p>
+      <button class="gbtn" onclick="login()">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+        Đăng nhập bằng Google
+      </button>
+      <div class="gate-msg" id="gateMsg"></div>
+    </div>
+  </div>
+
+  <div class="wrap" id="app" style="display:none">
+    <div class="top">
+      <h1>Báo cáo kinh doanh</h1>
+      <span class="ctrl">Tỷ giá USD→VND <input id="rate" type="number" value="25000" min="1000" step="500"></span>
+      <span class="sp"></span>
+      <label class="ctrl" style="cursor:pointer"><input type="checkbox" id="auto" style="width:auto"> Tự làm mới 60s</label>
+      <button class="btn" onclick="load()">↻ Làm mới</button>
+      <button class="btn" onclick="exportJSON()">Tải JSON</button>
+      <button class="btn" onclick="exportCSV()">Tải CSV (P&L)</button>
+      <button class="btn" onclick="logout()">Đăng xuất</button>
+    </div>
+    <div id="err"></div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="grid">
+      <div class="panel"><h2>Doanh thu &amp; Chi phí theo tháng <small>(cột: doanh thu · đường: chi phí quy VND)</small></h2><div class="chartbox"><canvas id="chRevCost"></canvas></div></div>
+      <div class="panel"><h2>Chi phí theo tính năng</h2><div class="chartbox sm"><canvas id="chFeature"></canvas></div></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px"><h2>Sử dụng theo ngày <small>(60 ngày gần nhất)</small></h2><div class="chartbox"><canvas id="chDaily"></canvas></div></div>
+
+    <div class="grid">
+      <div class="panel"><h2>P&amp;L từng học viên <small>(sắp theo chi phí)</small></h2>
+        <div class="tablewrap"><table id="tblPnl"><thead><tr><th>Email</th><th class="num">Doanh thu</th><th class="num">Lượt</th><th class="num">Chi phí (USD)</th><th class="num">Chi phí (VND)</th><th class="num">Lãi (VND)</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div>
+        <div class="panel" style="margin-bottom:16px"><h2>Gói sắp hết hạn (≤7 ngày)</h2>
+          <div class="tablewrap" style="max-height:170px"><table id="tblExp"><thead><tr><th>Email</th><th>Gói</th><th class="num">Còn (ngày)</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="panel"><h2>Lượt mua lẻ còn tồn</h2>
+          <div class="tablewrap" style="max-height:170px"><table id="tblCredits"><thead><tr><th>Email</th><th class="num">Para</th><th class="num">Chấm</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot" id="foot"></div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://xnybassnkbjrfhltllmk.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_feonQXc8fCjYKRulpXG0Qg_aGYox7f8";
+const SB = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let REPORT=null, charts={}, autoTimer=null;
+const $=id=>document.getElementById(id);
+const vnd=n=>Math.round(Number(n)||0).toLocaleString("vi-VN")+"đ";
+const usd=n=>"$"+(Number(n)||0).toFixed((Number(n)||0)<1?4:2);
+const rate=()=>Math.max(1000, parseFloat($("rate").value)||25000);
+
+/* ---- auth ---- */
+async function token(){ if(!SB) return ""; try{ const {data:{session}}=await SB.auth.getSession(); return session?session.access_token:""; }catch(e){ return ""; } }
+async function login(){ if(!SB){ $("gateMsg").textContent="Chưa cấu hình đăng nhập."; return; } await SB.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.href.split("#")[0]}}); }
+async function logout(){ try{ if(SB) await SB.auth.signOut(); }catch(e){} showGate(); }
+function showGate(msg){ $("gate").classList.add("show"); $("app").style.display="none"; if(msg)$("gateMsg").textContent=msg; }
+function showApp(){ $("gate").classList.remove("show"); $("app").style.display="block"; }
+
+/* ---- load ---- */
+async function load(){
+  const t=await token(); if(!t){ showGate(); return; }
+  $("err").classList.remove("show");
+  try{
+    const r=await fetch("/.netlify/functions/report",{headers:{Authorization:"Bearer "+t}});
+    const txt=await r.text(); let d={}; try{d=JSON.parse(txt);}catch(e){}
+    if(r.status===401){ showGate("Phiên hết hạn, đăng nhập lại nhé."); return; }
+    if(r.status===403){ showGate((d&&d.error)||"Tài khoản không có quyền admin."); return; }
+    if(!r.ok){ showApp(); err((d&&d.error||"Lỗi tải báo cáo")+(d&&d.detail?(" — "+d.detail):"")); return; }
+    REPORT=d; showApp(); render();
+  }catch(e){ showApp(); err("Không gọi được máy chủ. Cần chạy trên Netlify (không mở file trực tiếp)."); }
+}
+function err(m){ const e=$("err"); e.textContent=m; e.classList.add("show"); }
+
+/* ---- render ---- */
+function render(){ if(!REPORT) return; renderKPIs(); renderRevCost(); renderFeature(); renderDaily(); renderPnl(); renderExp(); renderCredits();
+  $("foot").textContent="Cập nhật: "+new Date(REPORT.generated_at||Date.now()).toLocaleString("vi-VN"); }
+
+function renderKPIs(){
+  const o=REPORT.overview||{}, R=rate();
+  const revM=Number(o.revenue_vnd_this_month||0), costM=Number(o.cost_usd_this_month||0)*R;
+  const profit=revM-costM, margin=revM>0?profit/revM:0;
+  const byPlan=o.active_by_plan||{};
+  const cards=[
+    {lbl:"Doanh thu tháng này",val:vnd(revM),cls:"",sub:`Gói <b>${vnd(o.revenue_goi_vnd_this_month)}</b> · Lẻ <b>${vnd(o.revenue_le_vnd_this_month)}</b>`},
+    {lbl:"Chi phí AI tháng này",val:vnd(costM),cls:"coral",sub:`= <b>${usd(o.cost_usd_this_month)}</b> × tỷ giá`},
+    {lbl:"Lợi nhuận tháng này",val:vnd(profit),cls:profit>=0?"green":"coral",sub:`Biên <b>${(margin*100).toFixed(1)}%</b>`},
+    {lbl:"MRR (gói đang chạy)",val:vnd(o.mrr_vnd),cls:"iris",sub:`${o.active_subs||0} gói · Std ${byPlan.standard||0} · Pro ${byPlan.pro||0}`},
+    {lbl:"Học viên",val:(o.users_active_30d||0),cls:"",sub:`hoạt động 30 ngày · tổng <b>${o.users_total||0}</b>`},
+    {lbl:"Lượt mua lẻ còn tồn",val:(Number(o.credits_para_outstanding||0)+Number(o.credits_score_outstanding||0)),cls:"amber",sub:`Para <b>${o.credits_para_outstanding||0}</b> · Chấm <b>${o.credits_score_outstanding||0}</b>`},
+  ];
+  $("kpis").innerHTML=cards.map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val ${c.cls}">${c.val}</div><div class="sub">${c.sub}</div></div>`).join("");
+}
+
+function mk(id,cfg){ if(charts[id]) charts[id].destroy(); charts[id]=new Chart($(id),cfg); }
+const GRID={color:"rgba(255,255,255,.06)"}, TICK={color:"#787E92"};
+Chart.defaults.font.family="Be Vietnam Pro"; Chart.defaults.color="#AAB0C0";
+
+function renderRevCost(){
+  const rev=REPORT.revenue_monthly||[], cost=REPORT.cost_monthly||[], R=rate();
+  const months=Array.from(new Set([...rev.map(x=>x.thang),...cost.map(x=>x.thang)])).sort();
+  const goi=months.map(m=>{const r=rev.find(x=>x.thang===m);return r?Number(r.goi_vnd):0;});
+  const le =months.map(m=>{const r=rev.find(x=>x.thang===m);return r?Number(r.mua_le_vnd):0;});
+  const co =months.map(m=>{const c=cost.find(x=>x.thang===m);return c?Number(c.cost_usd)*R:0;});
+  mk("chRevCost",{data:{labels:months,datasets:[
+    {type:"bar",label:"Gói (VND)",data:goi,backgroundColor:"#7B6BF2",stack:"rev",borderRadius:6},
+    {type:"bar",label:"Mua lẻ (VND)",data:le,backgroundColor:"#3FD7A4",stack:"rev",borderRadius:6},
+    {type:"line",label:"Chi phí (VND)",data:co,borderColor:"#FF7A93",backgroundColor:"#FF7A93",tension:.35,borderWidth:2,pointRadius:3,yAxisID:"y"}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{labels:{boxWidth:12}},tooltip:{callbacks:{label:c=>c.dataset.label+": "+vnd(c.parsed.y)}}},
+    scales:{x:{grid:GRID,ticks:TICK},y:{grid:GRID,ticks:{...TICK,callback:v=>(v/1e6).toFixed(1)+"M"},stacked:true}}}});
+}
+function renderFeature(){
+  const f=REPORT.by_feature||[]; const label={ideas:"Tìm ý tưởng",para:"Paraphrase",score:"Chấm điểm",exam:"Đề thi"};
+  mk("chFeature",{type:"doughnut",data:{labels:f.map(x=>label[x.feature]||x.feature),
+    datasets:[{data:f.map(x=>Number(x.cost_usd)),backgroundColor:["#7B6BF2","#3FD7A4","#F2C261","#FF7A93","#9486FF"],borderColor:"#15161E",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:12}},tooltip:{callbacks:{label:c=>c.label+": "+usd(c.parsed)}}}}});
+}
+function renderDaily(){
+  const u=REPORT.usage_daily||[];
+  mk("chDaily",{data:{labels:u.map(x=>x.ngay),datasets:[
+    {type:"bar",label:"Lượt dùng",data:u.map(x=>Number(x.luot)),backgroundColor:"#7B6BF2",borderRadius:4,yAxisID:"y"},
+    {type:"line",label:"Chi phí (USD)",data:u.map(x=>Number(x.cost_usd)),borderColor:"#F2C261",backgroundColor:"#F2C261",tension:.35,borderWidth:2,pointRadius:0,yAxisID:"y1"}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{labels:{boxWidth:12}}},
+    scales:{x:{grid:GRID,ticks:{...TICK,maxTicksLimit:12}},y:{grid:GRID,ticks:TICK,position:"left"},y1:{grid:{drawOnChartArea:false},ticks:{...TICK,callback:v=>"$"+v},position:"right"}}}});
+}
+function renderPnl(){
+  const rows=REPORT.pnl_user||[], R=rate();
+  $("tblPnl").querySelector("tbody").innerHTML=rows.slice(0,150).map(r=>{
+    const cv=Number(r.cost_usd)*R, pf=Number(r.revenue_vnd)-cv;
+    return `<tr><td>${esc(r.email)}</td><td class="num">${vnd(r.revenue_vnd)}</td><td class="num">${r.luot||0}</td><td class="num">${usd(r.cost_usd)}</td><td class="num">${vnd(cv)}</td><td class="num ${pf>=0?'pos':'neg'}">${vnd(pf)}</td></tr>`;
+  }).join("")||`<tr><td colspan="6" class="muted">Chưa có dữ liệu</td></tr>`;
+}
+function renderExp(){
+  const rows=REPORT.expiring||[];
+  $("tblExp").querySelector("tbody").innerHTML=rows.map(r=>`<tr><td>${esc(r.email)}</td><td><span class="tag">${esc(r.plan)}</span></td><td class="num warn">${r.days_left}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">Không có gói nào sắp hết hạn</td></tr>`;
+}
+function renderCredits(){
+  const rows=REPORT.credits||[];
+  $("tblCredits").querySelector("tbody").innerHTML=rows.map(r=>`<tr><td>${esc(r.email)}</td><td class="num">${r.extra_para||0}</td><td class="num">${r.extra_score||0}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">Không có lượt mua lẻ tồn</td></tr>`;
+}
+function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ---- export ---- */
+function dl(name,text,type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+function exportJSON(){ if(!REPORT)return; dl("bao-cao-"+new Date().toISOString().slice(0,10)+".json", JSON.stringify(REPORT,null,2), "application/json"); }
+function exportCSV(){
+  if(!REPORT)return; const R=rate(); const rows=REPORT.pnl_user||[];
+  const head="email,revenue_vnd,luot,cost_usd,cost_vnd,profit_vnd";
+  const body=rows.map(r=>{const cv=Number(r.cost_usd)*R,pf=Number(r.revenue_vnd)-cv;return [r.email,r.revenue_vnd,r.luot||0,r.cost_usd,Math.round(cv),Math.round(pf)].join(",");}).join("\n");
+  dl("pnl-hocvien-"+new Date().toISOString().slice(0,10)+".csv", head+"\n"+body, "text/csv");
+}
+
+/* ---- rate + auto-refresh ---- */
+$("rate").addEventListener("input",()=>{ try{localStorage.setItem("dash_rate",$("rate").value);}catch(e){} if(REPORT) render(); });
+$("auto").addEventListener("change",e=>{ try{localStorage.setItem("dash_auto",e.target.checked?"1":"0");}catch(e){} if(e.target.checked){ autoTimer=setInterval(load,60000);} else if(autoTimer){ clearInterval(autoTimer); autoTimer=null; } });
+try{ const sr=localStorage.getItem("dash_rate"); if(sr)$("rate").value=sr; if(localStorage.getItem("dash_auto")==="1"){ $("auto").checked=true; autoTimer=setInterval(load,60000);} }catch(e){}
+
+/* ---- init ---- */
+(async function(){
+  if(!SB){ showGate("Chưa cấu hình Supabase."); return; }
+  SB.auth.onAuthStateChange((_e,s)=>{ if(s&&s.user) load(); else showGate(); });
+  const {data:{session}}=await SB.auth.getSession();
+  if(session&&session.user) load(); else showGate();
+})();
+</script>
+</body>
+</html>
