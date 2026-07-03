@@ -106,6 +106,13 @@
   .gbubble.use{color:var(--green);background:rgba(63,215,164,.12);border-color:rgba(63,215,164,.32)}
   .gbubble.cost{color:var(--coral);background:rgba(255,122,147,.12);border-color:rgba(255,122,147,.32)}
   .gbubble.avg{color:var(--amber);background:rgba(242,194,97,.12);border-color:rgba(242,194,97,.34)}
+  /* đóng băng cột Email khi cuộn ngang */
+  #tblPnl thead tr:not(.grp) th{z-index:2}
+  #tblPnl thead tr.grp th:first-child{position:sticky;left:0;z-index:3;background:var(--s2)}
+  #tblPnl thead tr:not(.grp) th:first-child{position:sticky;left:0;top:0;z-index:5;background:var(--s2)}
+  #tblPnl tbody td:first-child{position:sticky;left:0;z-index:1;background:var(--s1)}
+  #tblPnl tbody tr:hover td:first-child{background:#1d1f2a}
+  #tblPnl th:first-child,#tblPnl td:first-child{border-right:1px solid var(--line2);box-shadow:8px 0 14px -10px rgba(0,0,0,.7)}
 </style>
 </head>
 <body>
