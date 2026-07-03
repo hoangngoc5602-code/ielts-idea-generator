@@ -96,6 +96,16 @@
   .reveal{opacity:0}
   .seclabel{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tx3);margin:24px 2px 13px}
   .seclabel::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+  /* bảng P&L nhiều cột: bubble nhóm + vạch ngăn nhóm */
+  #tblPnl{min-width:1120px}
+  #tblPnl th,#tblPnl td{padding:9px 11px}
+  #tblPnl thead tr.grp th{position:static;background:transparent;padding:2px 8px 9px;text-align:center;border-bottom:0}
+  #tblPnl .gsep{border-left:1px solid var(--line2)}
+  .gbubble{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .gbubble.biz{color:var(--iris2);background:rgba(123,107,242,.13);border-color:rgba(123,107,242,.34)}
+  .gbubble.use{color:var(--green);background:rgba(63,215,164,.12);border-color:rgba(63,215,164,.32)}
+  .gbubble.cost{color:var(--coral);background:rgba(255,122,147,.12);border-color:rgba(255,122,147,.32)}
+  .gbubble.avg{color:var(--amber);background:rgba(242,194,97,.12);border-color:rgba(242,194,97,.34)}
 </style>
 </head>
 <body>
@@ -147,17 +157,36 @@
       <div class="panel reveal"><h2><span class="dot" style="background:var(--iris2)"></span>Học viên mới theo tháng <small>· acquisition</small></h2><div class="chartbox"><canvas id="chSignup"></canvas></div></div>
     </div>
 
-    <div class="grid">
-      <div class="panel reveal"><h2><span class="dot"></span>P&amp;L từng học viên <small>· sắp theo chi phí</small></h2>
-        <div class="tw"><table id="tblPnl"><thead><tr><th>Email</th><th class="num">Doanh thu</th><th class="num">Lượt</th><th class="num">Chi phí ($)</th><th class="num">Chi phí (đ)</th><th class="num">Lãi (đ)</th></tr></thead><tbody></tbody></table></div>
+    <div class="panel reveal" style="margin-bottom:16px">
+      <h2><span class="dot"></span>P&amp;L từng học viên <small>· sắp theo chi phí · cuộn ngang để xem theo tính năng</small></h2>
+      <div class="tw">
+        <table id="tblPnl">
+          <thead>
+            <tr class="grp">
+              <th></th>
+              <th class="gsep" colspan="3"><span class="gbubble biz">Kinh doanh (đ)</span></th>
+              <th class="gsep" colspan="4"><span class="gbubble use">Lượt dùng</span></th>
+              <th class="gsep" colspan="4"><span class="gbubble cost">Chi phí ($)</span></th>
+              <th class="gsep" colspan="3"><span class="gbubble avg">Chi phí TB / lượt ($)</span></th>
+            </tr>
+            <tr>
+              <th>Email</th>
+              <th class="num gsep">Doanh thu</th><th class="num">Chi phí</th><th class="num">Lãi</th>
+              <th class="num gsep">Tổng</th><th class="num">Ý tưởng</th><th class="num">Paraphrase</th><th class="num">Chấm</th>
+              <th class="num gsep">Tổng</th><th class="num">Ý tưởng</th><th class="num">Paraphrase</th><th class="num">Chấm</th>
+              <th class="num gsep">Ý tưởng</th><th class="num">Paraphrase</th><th class="num">Chấm</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <div>
-        <div class="panel reveal" style="margin-bottom:16px"><h2><span class="dot" style="background:var(--amber)"></span>Gói sắp hết hạn <small>· ≤7 ngày</small></h2>
-          <div class="tw" style="max-height:168px"><table id="tblExp"><thead><tr><th>Email</th><th>Gói</th><th class="num">Còn (ngày)</th></tr></thead><tbody></tbody></table></div>
-        </div>
-        <div class="panel reveal"><h2><span class="dot" style="background:var(--green)"></span>Lượt mua lẻ còn tồn</h2>
-          <div class="tw" style="max-height:168px"><table id="tblCredits"><thead><tr><th>Email</th><th class="num">Para</th><th class="num">Chấm</th></tr></thead><tbody></tbody></table></div>
-        </div>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div class="panel reveal"><h2><span class="dot" style="background:var(--amber)"></span>Gói sắp hết hạn <small>· ≤7 ngày</small></h2>
+        <div class="tw" style="max-height:220px"><table id="tblExp"><thead><tr><th>Email</th><th>Gói</th><th class="num">Còn (ngày)</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="panel reveal"><h2><span class="dot" style="background:var(--green)"></span>Lượt mua lẻ còn tồn</h2>
+        <div class="tw" style="max-height:220px"><table id="tblCredits"><thead><tr><th>Email</th><th class="num">Para</th><th class="num">Chấm</th></tr></thead><tbody></tbody></table></div>
       </div>
     </div>
     <div class="foot" id="foot"></div>
@@ -285,9 +314,17 @@ function renderDaily(){
 }
 function renderPnl(){
   const rows=REPORT.pnl_user||[], R=rate();
-  $("tblPnl").querySelector("tbody").innerHTML=rows.slice(0,150).map(r=>{const cv=(+r.cost_usd)*R,pf=(+r.revenue_vnd)-cv;
-    return `<tr><td>${esc(r.email)}</td><td class="num">${vnd(r.revenue_vnd)}</td><td class="num">${r.luot||0}</td><td class="num">${usd(r.cost_usd)}</td><td class="num">${vnd(cv)}</td><td class="num ${pf>=0?'pos':'neg'}">${vnd(pf)}</td></tr>`;
-  }).join("")||`<tr><td colspan="6" class="muted">Chưa có dữ liệu</td></tr>`;
+  const avg=(c,n)=>n>0?(c/n):0;
+  $("tblPnl").querySelector("tbody").innerHTML=rows.slice(0,150).map(r=>{
+    const cv=(+r.cost_usd)*R, pf=(+r.revenue_vnd)-cv;
+    const ni=+r.n_ideas||0, np=+r.n_para||0, ns=+r.n_score||0;
+    const ci=+r.c_ideas||0, cp=+r.c_para||0, cs=+r.c_score||0;
+    return `<tr><td>${esc(r.email)}</td>`+
+      `<td class="num gsep">${vnd(r.revenue_vnd)}</td><td class="num">${vnd(cv)}</td><td class="num ${pf>=0?'pos':'neg'}">${vnd(pf)}</td>`+
+      `<td class="num gsep">${r.luot||0}</td><td class="num">${ni}</td><td class="num">${np}</td><td class="num">${ns}</td>`+
+      `<td class="num gsep">${usd(r.cost_usd)}</td><td class="num">${usd(ci)}</td><td class="num">${usd(cp)}</td><td class="num">${usd(cs)}</td>`+
+      `<td class="num gsep">${usd(avg(ci,ni))}</td><td class="num">${usd(avg(cp,np))}</td><td class="num">${usd(avg(cs,ns))}</td></tr>`;
+  }).join("")||`<tr><td colspan="15" class="muted">Chưa có dữ liệu</td></tr>`;
 }
 function renderExp(){ const rows=REPORT.expiring||[];
   $("tblExp").querySelector("tbody").innerHTML=rows.map(r=>`<tr><td>${esc(r.email)}</td><td><span class="tag">${esc(r.plan)}</span></td><td class="num warnv">${r.days_left}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">Không có gói sắp hết hạn</td></tr>`;
@@ -300,8 +337,12 @@ function renderCredits(){ const rows=REPORT.credits||[];
 function dl(name,text,type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
 function exportJSON(){ if(REPORT) dl("bao-cao-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(REPORT,null,2),"application/json"); }
 function exportCSV(){ if(!REPORT)return; const R=rate(),rows=REPORT.pnl_user||[];
-  const b=rows.map(r=>{const cv=(+r.cost_usd)*R,pf=(+r.revenue_vnd)-cv;return [r.email,r.revenue_vnd,r.luot||0,r.cost_usd,Math.round(cv),Math.round(pf)].join(",");}).join("\n");
-  dl("pnl-hocvien-"+new Date().toISOString().slice(0,10)+".csv","email,revenue_vnd,luot,cost_usd,cost_vnd,profit_vnd\n"+b,"text/csv"); }
+  const avg=(c,n)=>n>0?(c/n).toFixed(6):0;
+  const head="email,revenue_vnd,cost_vnd,profit_vnd,luot_tong,luot_ideas,luot_para,luot_score,cost_usd_tong,cost_usd_ideas,cost_usd_para,cost_usd_score,tb_usd_ideas,tb_usd_para,tb_usd_score";
+  const b=rows.map(r=>{const cv=Math.round((+r.cost_usd)*R),pf=Math.round((+r.revenue_vnd)-cv);
+    const ni=+r.n_ideas||0,np=+r.n_para||0,ns=+r.n_score||0,ci=+r.c_ideas||0,cp=+r.c_para||0,cs=+r.c_score||0;
+    return [r.email,r.revenue_vnd,cv,pf,r.luot||0,ni,np,ns,r.cost_usd,ci,cp,cs,avg(ci,ni),avg(cp,np),avg(cs,ns)].join(",");}).join("\n");
+  dl("pnl-hocvien-"+new Date().toISOString().slice(0,10)+".csv",head+"\n"+b,"text/csv"); }
 
 /* rate + auto */
 $("rate").addEventListener("input",()=>{ try{localStorage.setItem("dash_rate",$("rate").value);}catch(e){} if(REPORT)render(); });
